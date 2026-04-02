@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Procesverslag — Gijs De Kremer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --accent: slategray; --accent-light: #e8eaec; --accent-dark: #2f4f4f;
+  --ink: #1a1a1a; --muted: #6b6b6b; --surface: #ffffff;
+  --raised: #f5f5f3; --border: rgba(0,0,0,0.12);
+  --warn: #BA7517; --warn-light: #FAEEDA;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #f0f0ee; --muted: #9a9a98; --surface: #1e1e1c;
+    --raised: #2a2a28; --border: rgba(255,255,255,0.12);
+    --accent-light: #3a3f44; --accent-dark: #b0bec5;
+    --warn-light: #412402; --warn: #FAC775;
+  }
+}
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--raised); color: var(--ink); min-height: 100vh; }
+
+/* ── PASSWORD SCREEN ── */
+.lockscreen { position: fixed; inset: 0; background: var(--raised); display: flex; align-items: center; justify-content: center; z-index: 999; }
+.lockscreen.hidden { display: none; }
+.lock-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 16px; padding: 2.5rem 2rem; width: 100%; max-width: 380px; text-align: center; }
+.lock-icon { font-size: 32px; margin-bottom: 1rem; opacity: 0.5; }
+.lock-card h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 600; margin-bottom: 0.4rem; }
+.lock-card p { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; }
+.lock-input { width: 100%; border: 0.5px solid var(--border); border-radius: 8px; padding: 10px 14px; font-family: inherit; font-size: 14px; background: var(--raised); color: var(--ink); outline: none; text-align: center; letter-spacing: 0.1em; margin-bottom: 1rem; }
+.lock-input:focus { border-color: var(--accent); }
+.lock-btn { width: 100%; background: slategray; color: white; border: none; border-radius: 8px; padding: 11px; font-family: inherit; font-size: 14px; cursor: pointer; transition: opacity 0.15s; }
+.lock-btn:hover { opacity: 0.85; }
+.lock-error { font-size: 12px; color: #E24B4A; margin-top: 0.75rem; min-height: 18px; }
+
+/* ── API KEY SETTINGS ── */
+.settings-bar { background: var(--warn-light); border-bottom: 0.5px solid var(--border); padding: 0.6rem 1.5rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.settings-bar.hidden { display: none; }
+.settings-bar span { font-size: 12px; color: var(--warn); }
+.api-input { border: 0.5px solid var(--border); border-radius: 6px; padding: 5px 10px; font-family: inherit; font-size: 12px; background: var(--surface); color: var(--ink); outline: none; width: 280px; }
+.api-save-btn { background: var(--warn); color: white; border: none; border-radius: 6px; padding: 5px 14px; font-size: 12px; cursor: pointer; font-family: inherit; }
+.api-ok { font-size: 12px; color: var(--accent); font-weight: 500; }
+
+.work-tab { padding: 6px 16px; border-radius: 20px; border: 0.5px solid var(--border); background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.work-tab:hover { border-color: var(--accent); color: var(--accent); }
+.work-tab.active { background: var(--accent); border-color: var(--accent); color: white; }
+.gesch-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; position: relative; }
+.gesch-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem; }
+.gesch-card-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.gesch-card-actions { display: flex; gap: 0.5rem; }
+.gesch-edit-btn { background: transparent; border: 0.5px solid var(--border); border-radius: 6px; padding: 3px 10px; font-size: 11px; cursor: pointer; color: var(--muted); font-family: inherit; }
+.gesch-edit-btn:hover { border-color: var(--accent); color: var(--accent); }
+.gesch-del-btn { background: transparent; border: 0.5px solid var(--border); border-radius: 6px; padding: 3px 10px; font-size: 11px; cursor: pointer; color: var(--muted); font-family: inherit; }
+.gesch-del-btn:hover { border-color: #E24B4A; color: #E24B4A; }
+.gesch-situation { font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: 0.5rem; }
+.gesch-comp-tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--accent-light); color: var(--accent-dark); }
+.gesch-content { font-size: 13px; color: var(--muted); line-height: 1.65; }
+.eyeopener-block { margin-top:0.75rem; padding:0.75rem; background:linear-gradient(135deg, #f5f5f3, #ebebea); border-radius:8px; border-left:3px solid slategray; }
+.eyeopener-label { font-size:11px; font-weight:600; color:slategray; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; }
+.eyeopener-text { font-size:13px; color:var(--ink); line-height:1.6; font-style:italic; }
+.gesch-edit-area { width: 100%; border: 0.5px solid var(--accent); border-radius: 8px; padding: 10px 12px; font-family: inherit; font-size: 13px; line-height: 1.65; background: var(--raised); color: var(--ink); resize: vertical; min-height: 80px; outline: none; margin-top: 0.75rem; display: none; }
+.gesch-edit-actions { display: none; gap: 6px; margin-top: 6px; }
+
+/* ── SUGGESTIES ── */
+.suggesties-block { margin-top: 0.75rem; border-top: 0.5px solid var(--border); padding-top: 0.75rem; }
+.suggesties-toggle { display: flex; align-items: center; gap: 0.5rem; background: none; border: none; padding: 0; font-family: inherit; font-size: 12px; color: var(--muted); cursor: pointer; transition: color 0.15s; }
+.suggesties-toggle:hover { color: var(--accent); }
+.suggesties-toggle .sug-arrow { font-size: 10px; transition: transform 0.2s; }
+.suggesties-toggle.open .sug-arrow { transform: rotate(90deg); }
+.suggesties-list { margin-top: 0.6rem; display: none; }
+.suggesties-list.open { display: block; }
+.suggestie-item { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.5rem 0.6rem; border-radius: 6px; background: var(--raised); margin-bottom: 0.4rem; font-size: 12px; color: var(--muted); line-height: 1.55; }
+.suggestie-item.dismissed { display: none; }
+.suggestie-check { flex-shrink: 0; margin-top: 1px; width: 15px; height: 15px; border-radius: 3px; border: 0.5px solid var(--border); background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 9px; color: var(--accent); transition: all 0.15s; }
+.suggestie-check:hover { border-color: var(--accent); }
+.suggesties-toon-verborgen { font-size: 11px; color: var(--muted); cursor: pointer; margin-top: 0.3rem; text-decoration: underline; display: none; }
+.suggesties-toon-verborgen:hover { color: var(--accent); }
+.suggesties-loading { font-size: 12px; color: var(--muted); font-style: italic; padding: 0.4rem 0; }
+
+/* ── TOP BAR ── */
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.5rem; background: var(--surface); border-bottom: 0.5px solid var(--border); flex-wrap: wrap; gap: 0.5rem; position: sticky; top: 0; z-index: 100; }
+.topbar-left { display: flex; align-items: baseline; gap: 0.75rem; }
+.topbar h1 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; font-weight: 600; }
+.topbar-sub { font-size: 12px; color: var(--muted); }
+.mode-tabs { display: flex; gap: 4px; }
+.mode-tab { padding: 5px 14px; border-radius: 20px; border: 0.5px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.mode-tab:hover { border-color: var(--accent); color: var(--accent); }
+.mode-tab.active { background: var(--accent); border-color: var(--accent); color: white; }
+.topbar-actions { display: flex; gap: 6px; }
+.icon-btn { padding: 5px 12px; border-radius: 6px; border: 0.5px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── LAYOUT ── */
+.app { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+.mode { display: none; }
+.mode.active { display: block; }
+
+/* ── WORK MODE ── */
+.section-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 600; margin-bottom: 1.5rem; color: var(--ink); }
+.comp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.comp-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 1.25rem; cursor: pointer; transition: border-color 0.15s; }
+.comp-card:hover { border-color: var(--accent); }
+.comp-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+.comp-name { font-size: 13px; font-weight: 500; color: var(--ink); }
+.comp-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--accent-light); color: var(--accent-dark); }
+.comp-desc { font-size: 12px; color: var(--muted); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.comp-progress { margin-top: 1rem; height: 3px; background: var(--raised); border-radius: 2px; }
+.comp-progress-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s; }
+
+/* Input form */
+.card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+.card h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 600; margin-bottom: 0.4rem; color: var(--ink); }
+.card p { font-size: 13px; color: var(--muted); margin-bottom: 1.25rem; }
+.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.input-full { grid-column: 1/-1; }
+.input-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+.input-group input, .input-group textarea, .input-group select {
+  width: 100%; border: 0.5px solid var(--border); border-radius: 8px; padding: 8px 12px;
+  font-family: inherit; font-size: 13px; background: var(--raised); color: var(--ink); outline: none;
+}
+.input-group input:focus, .input-group textarea:focus { border-color: var(--accent); }
+.input-group textarea { resize: vertical; min-height: 100px; }
+.btn-primary { background: var(--accent); color: white; border: none; border-radius: 8px; padding: 10px 24px; font-family: inherit; font-size: 13px; cursor: pointer; transition: opacity 0.15s; }
+.btn-primary:hover { opacity: 0.85; }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-secondary { background: transparent; border: 0.5px solid var(--border); border-radius: 8px; padding: 9px 20px; font-family: inherit; font-size: 13px; cursor: pointer; color: var(--muted); margin-left: 0.5rem; }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.processing { display: none; align-items: center; gap: 10px; padding: 1rem; background: var(--accent-light); border-radius: 8px; margin-top: 1rem; }
+.processing.visible { display: flex; }
+.spinner { width: 16px; height: 16px; border: 2px solid transparent; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.processing-text { font-size: 13px; color: var(--accent-dark); }
+
+/* Competentie detail */
+.back-btn { background: transparent; border: 0.5px solid var(--border); border-radius: 6px; padding: 6px 14px; font-family: inherit; font-size: 13px; color: var(--muted); cursor: pointer; margin-bottom: 1rem; }
+.back-btn:hover { border-color: var(--accent); color: var(--accent); }
+.detail-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 600; color: var(--ink); }
+.detail-criteria { font-size: 13px; color: var(--muted); line-height: 1.6; margin-top: 0.5rem; padding: 1rem; background: var(--raised); border-radius: 8px; border-left: 3px solid var(--accent); margin-bottom: 1.5rem; }
+.entries-list { display: flex; flex-direction: column; gap: 1rem; }
+.entry-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 10px; padding: 1.25rem; position: relative; }
+.entry-meta { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; align-items: center; flex-wrap: wrap; }
+.entry-week { font-size: 12px; background: var(--raised); padding: 2px 10px; border-radius: 10px; color: var(--muted); }
+.entry-date { font-size: 12px; color: var(--muted); }
+.entry-situation { font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: 0.4rem; }
+.entry-content { font-size: 13px; color: var(--muted); line-height: 1.65; }
+.entry-delete { position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; cursor: pointer; color: var(--muted); font-size: 16px; opacity: 0.4; transition: opacity 0.15s; }
+.entry-delete:hover { opacity: 1; color: #E24B4A; }
+.empty-state { text-align: center; padding: 3rem; color: var(--muted); font-size: 14px; }
+
+/* ── PRESENTATION MODE ── */
+.pres-nav { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+.pres-nav-btn { padding: 5px 14px; border-radius: 20px; border: 0.5px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.pres-nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+.pres-nav-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+.pres-chapter { display: none; }
+.pres-chapter.active { display: block; }
+
+/* Titlepage */
+.titlepage { background: var(--surface); border: 0.5px solid var(--border); border-radius: 16px; padding: 3rem 2.5rem; text-align: center; }
+.titlepage-accent { width: 60px; height: 6px; background: var(--accent); border-radius: 3px; margin: 0 auto 2rem; }
+.titlepage h1 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 36px; font-weight: 600; margin-bottom: 0.5rem; }
+.titlepage h2 { font-size: 16px; color: var(--muted); font-weight: 600; margin-bottom: 2.5rem; }
+.titlepage-meta { display: inline-grid; grid-template-columns: auto auto; gap: 0.5rem 2rem; text-align: left; margin-bottom: 2rem; }
+.titlepage-meta .label { font-size: 12px; color: var(--muted); }
+.titlepage-meta .value { font-size: 12px; font-weight: 500; }
+.titlepage-logo { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; color: var(--muted); border-top: 0.5px solid var(--border); padding-top: 1.5rem; margin-top: 1.5rem; }
+
+/* Chapter layout */
+.chapter-header { margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 0.5px solid var(--border); }
+.chapter-num { font-size: 12px; color: var(--accent); font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.25rem; }
+.chapter-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 28px; font-weight: 600; }
+
+.section-block { margin-bottom: 2rem; }
+.section-block h3 { font-size: 16px; font-weight: 600; margin-bottom: 0.75rem; color: var(--ink); }
+.section-block h4 { font-size: 13px; font-weight: 600; color: var(--accent-dark); margin: 1rem 0 0.4rem; }
+
+/* Editable placeholder */
+.placeholder-block { position: relative; }
+.placeholder-text { font-size: 14px; line-height: 1.75; color: var(--ink); min-height: 60px; white-space: pre-wrap; }
+.placeholder-text.empty { color: var(--muted); font-style: italic; }
+.edit-btn { position: absolute; top: 0; right: 0; background: transparent; border: 0.5px solid var(--border); border-radius: 6px; padding: 3px 10px; font-size: 11px; cursor: pointer; color: var(--muted); font-family: inherit; transition: all 0.15s; opacity: 0; }
+.placeholder-block:hover .edit-btn { opacity: 1; }
+.edit-btn:hover { border-color: var(--accent); color: var(--accent); }
+.edit-area { width: 100%; border: 0.5px solid var(--accent); border-radius: 8px; padding: 10px 12px; font-family: inherit; font-size: 14px; line-height: 1.75; background: var(--raised); color: var(--ink); resize: vertical; min-height: 80px; outline: none; display: none; }
+.edit-actions { display: none; gap: 6px; margin-top: 6px; }
+.save-btn { background: var(--accent); color: white; border: none; border-radius: 6px; padding: 5px 14px; font-size: 12px; cursor: pointer; font-family: inherit; }
+.cancel-btn { background: transparent; border: 0.5px solid var(--border); border-radius: 6px; padding: 5px 12px; font-size: 12px; cursor: pointer; font-family: inherit; color: var(--muted); }
+
+/* Competentie section in presentation */
+.comp-section { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+.comp-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.comp-section-title { font-size: 16px; font-weight: 500; color: var(--ink); }
+.comp-section-badge { font-size: 11px; padding: 2px 10px; border-radius: 10px; background: var(--accent-light); color: var(--accent-dark); }
+.comp-entry-pres { border-left: 2px solid var(--accent-light); padding-left: 1rem; margin-bottom: 1rem; }
+.comp-entry-pres-meta { font-size: 11px; color: var(--muted); margin-bottom: 0.4rem; }
+.comp-entry-pres-text { font-size: 13px; color: var(--muted); line-height: 1.65; }
+.comp-empty { font-size: 13px; color: var(--muted); font-style: italic; }
+
+/* Conclusie table */
+.conclusie-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 1rem; }
+.conclusie-table th { text-align: left; padding: 8px 12px; border-bottom: 0.5px solid var(--border); font-weight: 500; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.conclusie-table td { padding: 10px 12px; border-bottom: 0.5px solid var(--border); vertical-align: top; }
+.conclusie-table tr:last-child td { border-bottom: none; }
+.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.dot-green { background: var(--accent); }
+.dot-amber { background: var(--warn); }
+.zelfoordeel-select { border: 0.5px solid var(--border); border-radius: 6px; padding: 4px 8px; font-family: inherit; font-size: 12px; background: var(--raised); color: var(--ink); outline: none; cursor: pointer; }
+.zelfoordeel-select:focus { border-color: var(--accent); }
+.toelichting-input { width: 100%; border: 0.5px solid var(--border); border-radius: 6px; padding: 4px 8px; font-family: inherit; font-size: 12px; background: var(--raised); color: var(--ink); outline: none; margin-top: 4px; }
+.toelichting-input:focus { border-color: var(--accent); }
+.toelichting-input::placeholder { color: var(--muted); }
+
+.bijlage-row { display:flex; gap:1rem; align-items:flex-start; padding:0.75rem 0; border-bottom:0.5px solid var(--border); }
+.bijlage-nr { font-size:12px; font-weight:600; min-width:80px; color:slategray; padding-top:3px; flex-shrink:0; }
+.bijlage-content { flex:1; }
+.bijlage-title-text { font-size:13px; color:var(--ink); font-weight:500; }
+.bijlage-desc-text { font-size:12px; color:var(--muted); margin-top:2px; }
+.bijlage-edit-btn { margin-top:6px; background:transparent; border:0.5px solid var(--border); border-radius:5px; padding:2px 10px; font-size:11px; cursor:pointer; color:var(--muted); font-family:inherit; transition:all 0.15s; }
+.bijlage-edit-btn:hover { border-color:slategray; color:slategray; }
+.bijlage-edit-form { margin-top:0.75rem; display:none; background:var(--raised); border-radius:8px; padding:0.75rem; }
+.bijlage-edit-form label { display:block; font-size:11px; color:var(--muted); margin-bottom:4px; }
+.bijlage-edit-form input, .bijlage-edit-form textarea { width:100%; border:0.5px solid var(--border); border-radius:6px; padding:7px 10px; font-family:inherit; font-size:13px; background:var(--surface); color:var(--ink); outline:none; margin-bottom:8px; }
+.bijlage-edit-form input:focus, .bijlage-edit-form textarea:focus { border-color:slategray; }
+.bijlage-edit-form textarea { resize:vertical; min-height:60px; }
+.bijlage-form-actions { display:flex; gap:6px; }
+.bijlage-save-btn { background:slategray; color:white; border:none; border-radius:6px; padding:5px 14px; font-size:12px; cursor:pointer; font-family:inherit; }
+.bijlage-cancel-btn { background:transparent; border:0.5px solid var(--border); border-radius:6px; padding:5px 12px; font-size:12px; cursor:pointer; font-family:inherit; color:var(--muted); }
+.bijlagen-werkmodus { background:var(--surface); border:0.5px solid var(--border); border-radius:12px; padding:1.25rem; margin-bottom:1.5rem; }
+.bijlagen-werkmodus h3 { font-size:15px; font-weight:600; margin-bottom:1rem; color:var(--ink); }
+
+.comp-pill { display:inline-flex; align-items:center; padding:5px 14px; border-radius:20px; border:0.5px solid var(--border); background:var(--surface); font-size:12px; color:var(--muted); cursor:pointer; transition:all 0.15s; font-family:inherit; }
+.comp-pill:hover { border-color:slategray; color:slategray; }
+.comp-pill.selected { background:slategray; border-color:slategray; color:white; }
+.bijlage-pill { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:20px; border:0.5px solid var(--border); background:var(--surface); font-size:12px; color:var(--muted); cursor:pointer; transition:all 0.15s; user-select:none; font-family:inherit; }
+.bijlage-pill:hover { border-color:slategray; color:slategray; }
+.bijlage-pill.selected { background:slategray; border-color:slategray; color:white; }
+.bijlage-pill .pill-check { font-size:11px; }
+
+
+
+/* ── PRINT ── */
+@media print {
+  .topbar, .pres-nav, .edit-btn, .topbar-actions, .mode-tabs, .settings-bar { display: none !important; }
+  body { background: white; }
+  .app { padding: 0; max-width: 100%; }
+  .pres-chapter { display: block !important; page-break-before: always; }
+  .pres-chapter:first-child { page-break-before: avoid; }
+  .comp-section, .card, .titlepage { box-shadow: none; border: 0.5px solid #ddd; }
+  @page { margin: 1.5cm; size: A4; }
+}
+
+/* Toast */
+.toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--accent); color: white; padding: 10px 20px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200; }
+.toast.show { opacity: 1; }
+
+/* Competentie hint */
+.comp-hint-box { margin-top: 0.5rem; border-radius: 8px; border: 0.5px solid var(--border); background: var(--raised); overflow: hidden; }
+.comp-hint-toggle { display: flex; align-items: center; gap: 0.5rem; width: 100%; background: none; border: none; padding: 8px 12px; font-family: inherit; font-size: 12px; color: var(--muted); cursor: pointer; text-align: left; transition: color 0.15s; }
+.comp-hint-toggle:hover { color: var(--accent); }
+.comp-hint-toggle .hint-arrow { transition: transform 0.2s; font-style: normal; font-size: 10px; }
+.comp-hint-toggle.open .hint-arrow { transform: rotate(90deg); }
+.comp-hint-content { display: none; padding: 0.75rem 1rem 1rem; border-top: 0.5px solid var(--border); }
+.comp-hint-content.open { display: block; }
+.comp-hint-title { font-size: 12px; font-weight: 600; color: var(--accent-dark); margin-bottom: 0.4rem; }
+.comp-hint-text { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.comp-hint-bewijs { margin-top: 0.6rem; }
+.comp-hint-bewijs span { display: block; font-size: 12px; color: var(--muted); line-height: 1.6; padding-left: 0.75rem; position: relative; }
+.comp-hint-bewijs span::before { content: '→'; position: absolute; left: 0; color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- LOCKSCREEN -->
+<div class="lockscreen" id="lockscreen">
+  <div class="lock-card">
+    <div class="lock-icon">🔒</div>
+    <h2>Procesverslag</h2>
+    <p>Gijs De Kremer · Haagse Hogeschool<br>Voer het wachtwoord in om verder te gaan.</p>
+    <input class="lock-input" type="password" id="lock-input" placeholder="Wachtwoord" onkeydown="if(event.key==='Enter')checkPassword()" autofocus />
+    <button class="lock-btn" onclick="checkPassword()">Inloggen</button>
+    <div class="lock-error" id="lock-error"></div>
+  </div>
+</div>
+
+<!-- API KEY SETTINGS BAR -->
+<div class="settings-bar hidden" id="settings-bar">
+  <span>⚠ Voer je Anthropic API-sleutel in om AI-functies te gebruiken:</span>
+  <input class="api-input" type="password" id="api-key-input" placeholder="sk-ant-..." />
+  <button class="api-save-btn" onclick="saveApiKey()">Opslaan</button>
+  <span class="api-ok" id="api-ok" style="display:none">✓ Sleutel opgeslagen</span>
+</div>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <h1>Procesverslag</h1>
+    <span class="topbar-sub">Gijs De Kremer · Urban Digital Twins Laakhaven-Oost</span>
+  </div>
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="switchMode('work')">Werkmodus</button>
+    <button class="mode-tab" onclick="switchMode('presentation')">Presentatie</button>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" onclick="exportJSON()">Exporteer JSON</button>
+    <button class="icon-btn" onclick="exportWord()">Exporteer Word</button>
+    <button class="icon-btn" onclick="exportPDF()">Exporteer PDF</button>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- ════════════════════════════════════════
+       WERKMODUS
+  ════════════════════════════════════════ -->
+  <div id="mode-work" class="mode active">
+
+    <!-- Dashboard -->
+    <div id="work-dashboard">
+      <div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;">
+        <button class="work-tab active" onclick="switchWorkTab('overzicht')">Overzicht</button>
+        <button class="work-tab" onclick="switchWorkTab('geschiedenis')">Geschiedenis</button>
+        <button class="work-tab" onclick="switchWorkTab('bijlagen')">Bijlagen</button>
+      </div>
+
+      <div id="tab-overzicht">
+      <div class="section-title">Competentie-overzicht</div>
+      <div class="comp-grid" id="comp-grid"></div>
+
+      </div><!-- end tab-overzicht -->
+
+      <div id="tab-geschiedenis" style="display:none">
+        <div class="section-title">Reflectiegeschiedenis</div>
+        <div id="geschiedenis-list"></div>
+      </div>
+
+      <div id="tab-bijlagen" style="display:none">
+        <div class="bijlagen-werkmodus">
+          <h3>Bijlagen beheren</h3>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">Voeg hier je bewijslast toe. Je kan ze daarna aanvinken bij het invoeren van een probleem.</p>
+          <div style="background:var(--raised);border-radius:10px;padding:1rem;margin-bottom:1.5rem">
+            <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:0.75rem">Nieuwe bijlage toevoegen</div>
+            <div style="display:flex;flex-direction:column;gap:0.5rem">
+              <input type="text" id="new-bijlage-title" placeholder="Titel — bijv: Notulen stakeholderbijeenkomst 14 mrt" style="border:0.5px solid var(--border);border-radius:7px;padding:8px 12px;font-family:inherit;font-size:13px;background:var(--surface);color:var(--ink);outline:none" />
+              <textarea id="new-bijlage-desc" placeholder="Beschrijving — bijv: Verslag van overleg met gemeente Den Haag" style="border:0.5px solid var(--border);border-radius:7px;padding:8px 12px;font-family:inherit;font-size:13px;background:var(--surface);color:var(--ink);outline:none;resize:vertical;min-height:60px"></textarea>
+              <button class="btn-primary" style="align-self:flex-start;padding:7px 18px;font-size:13px" onclick="addNewBijlage()">Toevoegen</button>
+            </div>
+          </div>
+          <div id="bijlagen-werk-list"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Probleem of uitdaging toevoegen</h2>
+        <p>Beschrijf een probleem of uitdaging die je hebt aangepakt — de AI laat zien hoe dit jouw groei als professional aantoont.</p>
+        <div class="input-row">
+          <div class="input-group"><label>Week</label><input type="text" id="inp-week" placeholder="Week 4" /></div>
+          <div class="input-group"><label>Datum</label><input type="date" id="inp-date" /></div>
+        </div>
+        <div class="input-row">
+          <div class="input-group input-full">
+            <label>Competenties <span style="font-weight:400;color:var(--muted)">(optioneel — selecteer de competenties die bij dit probleem horen)</span></label>
+            <div id="comp-checkboxes" style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.5rem">
+              <button type="button" class="comp-pill" id="comp-pill-professionaliseren" onclick="toggleCompPill('professionaliseren')">Professionaliseren ★</button>
+              <button type="button" class="comp-pill" id="comp-pill-onderzoeken" onclick="toggleCompPill('onderzoeken')">Onderzoeken ★</button>
+              <button type="button" class="comp-pill" id="comp-pill-ontwerpen" onclick="toggleCompPill('ontwerpen')">Ontwerpen</button>
+              <button type="button" class="comp-pill" id="comp-pill-managen" onclick="toggleCompPill('managen')">Managen</button>
+              <button type="button" class="comp-pill" id="comp-pill-specificeren" onclick="toggleCompPill('specificeren')">Specificeren</button>
+              <button type="button" class="comp-pill" id="comp-pill-communiceren" onclick="toggleCompPill('communiceren')">Communiceren</button>
+            </div>
+            <p style="font-size:11px;color:var(--muted);margin-top:6px">Laat leeg om de AI automatisch te laten bepalen welke competenties van toepassing zijn.</p>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group input-full">
+            <label>Probleem of uitdaging</label>
+            <textarea id="inp-situation" placeholder="Bijv: Stakeholders hadden geen duidelijk beeld van wat een digital twin kan betekenen voor hun dagelijks werk..." style="min-height:70px"></textarea>
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-top:6px">
+              <button type="button" onclick="verbeterSituation()" style="background:slategray;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:inherit" id="verbeter-btn">AI verbeteren ↗</button>
+              <span id="situation-hint" style="font-size:11px;color:var(--muted);display:none">Verduidelijkt door AI — je kunt het nog aanpassen.</span>
+            </div>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group input-full"><label>Hoe heb je dit aangepakt?</label>
+            <textarea id="inp-aanpak" placeholder="Beschrijf welke stappen je hebt gezet, welke keuzes je maakte en waarom..."></textarea>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group input-full"><label>Wat heb je hiervan geleerd of wat veranderde er door?</label>
+            <textarea id="inp-reflection" placeholder="Beschrijf je inzichten, groei of wat je anders zou doen..."></textarea>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group input-full"><label>Eye-opener of persoonlijk inzicht <span style="font-weight:400;color:var(--muted)">(optioneel — voor de integrale reflectie)</span></label>
+            <textarea id="inp-eyeopener" placeholder="Bijv: Ik realiseerde me dat stakeholders fundamenteel anders naar data kijken dan ik... of: een volgende keer zou ik eerder een tussentijdse terugkoppeling inplannen." style="min-height:70px"></textarea>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group input-full">
+            <label>Gekoppelde bijlagen <span style="font-weight:400;color:var(--muted)">(optioneel — vink de bijlagen aan die bij dit probleem horen)</span></label>
+            <div id="bijlagen-checkboxes" style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.5rem;min-height:44px">
+              <span style="font-size:12px;color:var(--muted);font-style:italic;padding:0.5rem 0">Voeg eerst bijlagen toe via het tabblad "Bijlagen".</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary" id="submit-btn" onclick="processReflection()">Verwerken via AI ↗</button>
+        <button class="btn-secondary" onclick="clearForm()">Wis</button>
+        <div class="processing" id="processing-indicator">
+          <div class="spinner"></div>
+          <div class="processing-text" id="processing-text">Reflectie wordt verwerkt...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Competentie detail -->
+    <div id="work-detail" style="display:none">
+      <button class="back-btn" onclick="showDashboard()">← Terug naar overzicht</button>
+      <div class="detail-title" id="detail-title"></div>
+      <div class="detail-criteria" id="detail-criteria"></div>
+      <div class="entries-list" id="entries-list"></div>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════
+       PRESENTATIEMODUS
+  ════════════════════════════════════════ -->
+  <div id="mode-presentation" class="mode">
+
+    <div class="pres-nav" id="pres-nav">
+      <button class="pres-nav-btn active" onclick="showChapter('ch-title')">Titelblad</button>
+      <button class="pres-nav-btn" onclick="showChapter('ch-1')">1. Inleiding</button>
+      <button class="pres-nav-btn" onclick="showChapter('ch-2')">2. Werkwijze</button>
+      <button class="pres-nav-btn" onclick="showChapter('ch-3')">3. Competenties</button>
+      <button class="pres-nav-btn" onclick="showChapter('ch-4')">4. Reflectie</button>
+      <button class="pres-nav-btn" onclick="showChapter('ch-5')">5. Conclusie</button>
+      <button class="pres-nav-btn" onclick="showChapter('ch-6')">6. Bijlagen</button>
+    </div>
+
+    <!-- Titelblad -->
+    <div id="ch-title" class="pres-chapter active">
+      <div class="titlepage">
+        <div class="titlepage-accent"></div>
+        <h1>Procesverslag</h1>
+        <h2>Urban Digital Twins in Laakhaven-Oost</h2>
+        <div class="titlepage-meta">
+          <span class="label">Schrijver</span><span class="value">Gijs de Kremer</span>
+          <span class="label">Opleiding</span><span class="value">Ruimtelijke Ontwikkeling | Climate & Management</span>
+          <span class="label">Instelling</span><span class="value">De Haagse Hogeschool</span>
+          <span class="label">Begeleiders</span><span class="value">Rik Lukey · Ekko Nap</span>
+          <span class="label">Organisatiebegeleider</span><span class="value">Dr. Ir. T.B. Salcedo Rahola</span>
+          <span class="label">Datum</span><span class="value" id="title-date">2026</span>
+          <span class="label">Versie</span><span class="value">1.0</span>
+        </div>
+        <div class="titlepage-logo">De Haagse Hogeschool · Research Group Energy in Transition</div>
+      </div>
+    </div>
+
+    <!-- Hoofdstuk 1 -->
+    <div id="ch-1" class="pres-chapter">
+      <div class="chapter-header">
+        <div class="chapter-num">Hoofdstuk 1</div>
+        <div class="chapter-title">Inleiding en context</div>
+      </div>
+
+      <div class="section-block">
+        <h3>Persoonlijke introductie</h3>
+        <div class="placeholder-block" id="ph-intro">
+          <div class="placeholder-text empty" id="ph-intro-text">Klik op 'Bewerk' om je persoonlijke introductie toe te voegen — profiel, interesses, specialisaties en motivatie.</div>
+          <button class="edit-btn" onclick="startEdit('ph-intro')">Bewerk</button>
+          <textarea class="edit-area" id="ph-intro-area"></textarea>
+          <div class="edit-actions" id="ph-intro-actions">
+            <button class="save-btn" onclick="saveEdit('ph-intro')">Opslaan</button>
+            <button class="cancel-btn" onclick="cancelEdit('ph-intro')">Annuleer</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <h3>Projectcontext en casusbeschrijving</h3>
+        <div class="placeholder-block" id="ph-context">
+          <div class="placeholder-text empty" id="ph-context-text">Klik op 'Bewerk' om de projectcontext toe te voegen — opdrachtgever, locatie, probleemstelling en relatie met duurzaamheid.</div>
+          <button class="edit-btn" onclick="startEdit('ph-context')">Bewerk</button>
+          <textarea class="edit-area" id="ph-context-area"></textarea>
+          <div class="edit-actions" id="ph-context-actions">
+            <button class="save-btn" onclick="saveEdit('ph-context')">Opslaan</button>
+            <button class="cancel-btn" onclick="cancelEdit('ph-context')">Annuleer</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <h3>Doel van de digital twin</h3>
+        <div class="placeholder-block" id="ph-doel">
+          <div class="placeholder-text empty" id="ph-doel-text">Klik op 'Bewerk' om het doel van de digital twin te beschrijven — functionele doelstelling en verwachte opbrengsten.</div>
+          <button class="edit-btn" onclick="startEdit('ph-doel')">Bewerk</button>
+          <textarea class="edit-area" id="ph-doel-area"></textarea>
+          <div class="edit-actions" id="ph-doel-actions">
+            <button class="save-btn" onclick="saveEdit('ph-doel')">Opslaan</button>
+            <button class="cancel-btn" onclick="cancelEdit('ph-doel')">Annuleer</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <h3>Doel en leeswijzer van het procesverslag</h3>
+        <div class="placeholder-block" id="ph-leeswijzer">
+          <div class="placeholder-text empty" id="ph-leeswijzer-text">Klik op 'Bewerk' om de leeswijzer toe te voegen.</div>
+          <button class="edit-btn" onclick="startEdit('ph-leeswijzer')">Bewerk</button>
+          <textarea class="edit-area" id="ph-leeswijzer-area"></textarea>
+          <div class="edit-actions" id="ph-leeswijzer-actions">
+            <button class="save-btn" onclick="saveEdit('ph-leeswijzer')">Opslaan</button>
+            <button class="cancel-btn" onclick="cancelEdit('ph-leeswijzer')">Annuleer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hoofdstuk 2 -->
+    <div id="ch-2" class="pres-chapter">
+      <div class="chapter-header">
+        <div class="chapter-num">Hoofdstuk 2</div>
+        <div class="chapter-title">Werkwijze, proces en bronnen</div>
+      </div>
+
+      <div class="section-block">
+        <h3>Aanpak van het afstudeerproces</h3>
+        <div class="placeholder-block" id="ph-aanpak">
+          <div class="placeholder-text empty" id="ph-aanpak-text">Klik op 'Bewerk' om de aanpak te beschrijven — algemene werkwijze en fasering van het proces (verkenning, onderzoek, ontwerp, uitwerking, evaluatie).</div>
+          <button class="edit-btn" onclick="startEdit('ph-aanpak')">Bewerk</button>
+          <textarea class="edit-area" id="ph-aanpak-area"></textarea>
+          <div class="edit-actions" id="ph-aanpak-actions">
+            <button class="save-btn" onclick="saveEdit('ph-aanpak')">Opslaan</button>
+            <button class="cancel-btn" onclick="cancelEdit('ph-aanpak')">Annuleer</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <h3>Bronnen en documentatie</h3>
+        <div class="placeholder-block" id="ph-bronnen">
+          <div class="placeholder-text empty" id="ph-bronnen-text">Klik op 'Bewerk' om de gebruikte bronnen en documentatie te beschrijven.</div>
+          <button class="edit-btn" onclick="startEdit('ph-bronnen')">Bewerk</button>
+          <textarea class="edit-area" id="ph-bronnen-area"></textarea>
+          <div class="edit-actions" id="ph-bronnen-actions">
+            <button class="save-btn" onclick="saveEdit('ph-bronnen')">Opslaan</button>
+            <button class="cancel-btn" onclick="cancelEdit('ph-bronnen')">Annuleer</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <h3>Koppeling met competenties en bewijsmateriaal</h3>
+        <div class="placeholder-block" id="ph-koppeling">
+          <div class="placeholder-text empty" id="ph-koppeling-text">Klik op 'Bewerk' om de systematiek van verwijzing naar bewijsmateriaal te beschrijven.</div>
+          <button class="edit-btn" onclick="startEdit('ph-koppeling')">Bewerk</button>
+          <textarea class="edit-area" id="ph-koppeling-area"></textarea>
+          <div class="edit-actions" id="ph-koppeling-actions">
+            <button class="save-btn" onclick="saveEdit('ph-koppeling')">Opslaan</button>
+            <button class="cancel-btn" onclick="cancelEdit('ph-koppeling')">Annuleer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hoofdstuk 3 — Competenties -->
+    <div id="ch-3" class="pres-chapter">
+      <div class="chapter-header">
+        <div class="chapter-num">Hoofdstuk 3</div>
+        <div class="chapter-title">Competentiegericht deel</div>
+      </div>
+      <div id="pres-competenties"></div>
+    </div>
+
+    <!-- Hoofdstuk 4 — Reflectie -->
+    <div id="ch-4" class="pres-chapter">
+      <div class="chapter-header">
+        <div class="chapter-num">Hoofdstuk 4</div>
+        <div class="chapter-title">Integrale reflectie op het afstudeerproces</div>
+      </div>
+
+      <div class="section-block">
+        <h3>Belangrijkste fasen en kenterpunten</h3>
+        <div class="placeholder-block" id="ph-fasen">
+          <div class="placeholder-text empty" id="ph-fasen-text">Klik op 'Bewerk' — of genereer automatisch op basis van je reflecties via de knop hieronder.</div>
+          <button class="edit-btn" onclick="startEdit('ph-fasen')">Bewerk</button>
+          <textarea class="edit-area" id="ph-fasen-area"></textarea>
+          <div class="edit-actions" id="ph-fasen-actions">
+            <button class="save-btn" onclick="saveEdit('ph-fasen')">Opslaan</button>
+            <button class="cancel-btn" onclick="cancelEdit('ph-fasen')">Annuleer</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <h3>Reflectie op leren rond digital twins en duurzaamheid</h3>
+        <div class="placeholder-block" id="ph-leren">
+          <div class="placeholder-text empty" id="ph-leren-text">Klik op 'Bewerk' om je kennisevolutie rond digital twins en duurzaamheid te beschrijven.</div>
+          <button class="edit-btn" onclick="startEdit('ph-leren')">Bewerk</button>
+          <textarea class="edit-area" id="ph-leren-area"></textarea>
+          <div class="edit-actions" id="ph-leren-actions">
+            <button class="save-btn" onclick="saveEdit('ph-leren')">Opslaan</button>
+            <button class="cancel-btn" onclick="cancelEdit('ph-leren')">Annuleer</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <h3>Analyse van sterke punten</h3>
+        <div class="placeholder-block" id="ph-sterk">
+          <div class="placeholder-text empty" id="ph-sterk-text">Klik op 'Bewerk' om je sterke competentiegebieden te benoemen en te onderbouwen.</div>
+          <button class="edit-btn" onclick="startEdit('ph-sterk')">Bewerk</button>
+          <textarea class="edit-area" id="ph-sterk-area"></textarea>
+          <div class="edit-actions" id="ph-sterk-actions">
+            <button class="save-btn" onclick="saveEdit('ph-sterk')">Opslaan</button>
+            <button class="cancel-btn" onclick="cancelEdit('ph-sterk')">Annuleer</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <h3>Analyse van verbeterpunten en leerpunten</h3>
+        <div class="placeholder-block" id="ph-verbeter">
+          <div class="placeholder-text empty" id="ph-verbeter-text">Klik op 'Bewerk' om je verbeterpunten en persoonlijke leerroute te beschrijven.</div>
+          <button class="edit-btn" onclick="startEdit('ph-verbeter')">Bewerk</button>
+          <textarea class="edit-area" id="ph-verbeter-area"></textarea>
+          <div class="edit-actions" id="ph-verbeter-actions">
+            <button class="save-btn" onclick="saveEdit('ph-verbeter')">Opslaan</button>
+            <button class="cancel-btn" onclick="cancelEdit('ph-verbeter')">Annuleer</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" style="margin-top:0.5rem" onclick="generateReflection()">Genereer reflectie via AI ↗</button>
+    </div>
+
+    <!-- Hoofdstuk 5 — Conclusie -->
+    <div id="ch-5" class="pres-chapter">
+      <div class="chapter-header">
+        <div class="chapter-num">Hoofdstuk 5</div>
+        <div class="chapter-title">Conclusie: eindniveau van de opleiding</div>
+      </div>
+
+      <div class="section-block">
+        <h3>Terugkoppeling per competentie</h3>
+        <table class="conclusie-table" id="conclusie-table">
+          <thead><tr><th>Competentie</th><th>Bewijs</th><th>Status</th><th>Zelfoordeel</th><th>Toelichting</th></tr></thead>
+          <tbody id="conclusie-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="section-block" style="margin-top:2rem">
+        <h3>Digital-twinproject als bewijs van werkveldgereedheid</h3>
+        <div class="placeholder-block" id="ph-werkveld">
+          <div class="placeholder-text empty" id="ph-werkveld-text">Klik op 'Bewerk' om toe te lichten hoe jouw project aansluit bij actuele stedelijke opgaven en je positioneert als beginnend professional.</div>
+          <button class="edit-btn" onclick="startEdit('ph-werkveld')">Bewerk</button>
+          <textarea class="edit-area" id="ph-werkveld-area"></textarea>
+          <div class="edit-actions" id="ph-werkveld-actions">
+            <button class="save-btn" onclick="saveEdit('ph-werkveld')">Opslaan</button>
+            <button class="cancel-btn" onclick="cancelEdit('ph-werkveld')">Annuleer</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <h3>Vooruitblik op verdere professionalisering</h3>
+        <div class="placeholder-block" id="ph-vooruitblik">
+          <div class="placeholder-text empty" id="ph-vooruitblik-text">Klik op 'Bewerk' om je ambitieprofiel en toekomstige ontwikkelrichting te beschrijven.</div>
+          <button class="edit-btn" onclick="startEdit('ph-vooruitblik')">Bewerk</button>
+          <textarea class="edit-area" id="ph-vooruitblik-area"></textarea>
+          <div class="edit-actions" id="ph-vooruitblik-actions">
+            <button class="save-btn" onclick="saveEdit('ph-vooruitblik')">Opslaan</button>
+            <button class="cancel-btn" onclick="cancelEdit('ph-vooruitblik')">Annuleer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hoofdstuk 6 — Bijlagen -->
+    <div id="ch-6" class="pres-chapter">
+      <div class="chapter-header">
+        <div class="chapter-num">Hoofdstuk 6</div>
+        <div class="chapter-title">Bijlagen</div>
+      </div>
+      <div class="section-block">
+        <h3>Overzicht deelproducten</h3>
+        <div id="bijlagen-auto-list" style="margin-bottom:1.5rem"></div>
+        <div class="section-block" style="margin-top:1.5rem">
+          <h3>Aanvullende bijlagen</h3>
+          <div class="placeholder-block" id="ph-bijlagen">
+            <div class="placeholder-text empty" id="ph-bijlagen-text">Klik op 'Bewerk' om extra bijlagen of opmerkingen toe te voegen.</div>
+            <button class="edit-btn" onclick="startEdit('ph-bijlagen')">Bewerk</button>
+            <textarea class="edit-area" id="ph-bijlagen-area"></textarea>
+            <div class="edit-actions" id="ph-bijlagen-actions">
+              <button class="save-btn" onclick="saveEdit('ph-bijlagen')">Opslaan</button>
+              <button class="cancel-btn" onclick="cancelEdit('ph-bijlagen')">Annuleer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end presentation mode -->
+</div><!-- end app -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── SUPABASE CONFIG ──
+const SUPA_URL = 'https://alzuwqnjebgzuccgzrrb.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsenV3cW5qZWJnenVjY2d6cnJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5NDgxNzQsImV4cCI6MjA4OTUyNDE3NH0.nee4oFiqsbDWOtbZnrQNZShml__jqFwdAoDhS-LKtmk';
+
+// ── WACHTWOORD & API ──
+const WACHTWOORD = 'laakhaven2026';
+
+function checkPassword() {
+  const val = document.getElementById('lock-input').value;
+  if (val === WACHTWOORD) {
+    sessionStorage.setItem('pv-auth', '1');
+    document.getElementById('lockscreen').classList.add('hidden');
+    initApp();
+  } else {
+    document.getElementById('lock-error').textContent = 'Onjuist wachtwoord. Probeer opnieuw.';
+    document.getElementById('lock-input').value = '';
+    document.getElementById('lock-input').focus();
+  }
+}
+
+function getApiKey() { return localStorage.getItem('pv-api-key') || ''; }
+
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key) return;
+  localStorage.setItem('pv-api-key', key);
+  document.getElementById('api-ok').style.display = 'inline';
+  document.getElementById('api-key-input').value = '';
+  document.getElementById('settings-bar').classList.add('hidden');
+  showToast('API-sleutel opgeslagen');
+}
+
+function initApp() {
+  if (!getApiKey()) document.getElementById('settings-bar').classList.remove('hidden');
+  document.getElementById('inp-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('title-date').textContent = new Date().toLocaleDateString('nl-NL', {day:'numeric',month:'long',year:'numeric'});
+  loadData();
+}
+
+if (sessionStorage.getItem('pv-auth') === '1') {
+  document.getElementById('lockscreen').classList.add('hidden');
+  initApp();
+}
+
+
+
+// ── SUPABASE CONFIG ──
+
+async function supaFetch(path, method='GET', body=null) {
+  const opts = {
+    method,
+    headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(SUPA_URL + '/rest/v1/' + path, opts);
+  const txt = await res.text();
+  return txt ? JSON.parse(txt) : [];
+}
+
+const COMPETENTIES = {
+  professionaliseren: { label: 'Professionaliseren', verplicht: true, desc: 'Je ontwikkelt een toekomstbestendige oplossing op basis van diverse invalshoeken en een projectdefinitie, een proces, kaders, richtlijnen en/of eisen. Je verantwoordt jouw aanpak, weegt alternatieven af en onderbouwt keuzes. Je houdt daarbij rekening met de wensen van de opdrachtgever(s), de maatschappelijke ontwikkelingen en de gevolgen tijdens de realisatie, het gebruik, het beheer en de sloop.' },
+  onderzoeken: { label: 'Onderzoeken', verplicht: true, desc: 'Je formuleert en valideert een onderzoeksvraag op basis van een voor de maatschappij en/of het beroep relevante opgave. Je kiest een of meer methoden, verzamelt gegevens en analyseert deze om zo een onderbouwd antwoord te geven op de vraag. Je doet van het geheel aan activiteiten, gegevens en bevindingen zodanig verslag dat deze reproduceerbaar zijn.' },
+  ontwerpen: { label: 'Ontwerpen', verplicht: false, desc: 'Je ontwikkelt een toekomstbestendige oplossing op basis van diverse invalshoeken en een projectdefinitie, een proces, kaders, richtlijnen en/of eisen. Je verantwoordt jouw aanpak, weegt alternatieven af en onderbouwt keuzes. Je houdt daarbij rekening met de wensen van de opdrachtgever(s), de maatschappelijke ontwikkelingen en de gevolgen tijdens de realisatie, het gebruik, het beheer en de sloop.' },
+  managen: { label: 'Managen', verplicht: false, desc: "Je stuurt en faciliteert het proces/project met het doel waarde te creëren. Je zorgt hierbij voor actieve communicatie en relevante stuurinformatie. Je overziet de complexiteit van het proces en intervenieert zo nodig. Je gaat adequaat om met risico's en maakt de belangen van alle betrokken mensen en partijen inzichtelijk en bewaakt deze. Je toetst bij oplevering of het eindresultaat voldoet." },
+  specificeren: { label: 'Specificeren', verplicht: false, desc: 'Je werkt de gekozen oplossing vanuit een integrale benadering in detail uit en houdt daarbij rekening met randvoorwaarden en andere disciplines. Jouw oplossing voldoet aan de eisen en is technisch, juridisch en economisch haalbaar, alsook maatschappelijk verantwoord en sociaal inclusief.' },
+  communiceren: { label: 'Communiceren', verplicht: false, desc: 'Je communiceert doelbewust en doelgroepgericht. Je bent je bewust van de omgeving en jouw rol en positie daarin. Je bent gericht op interactie en samenwerking, en draagt bij aan kennisvorming, meningsvorming en/of besluitvorming.' }
+};
+
+let data = { entries: {}, placeholders: {} };
+
+async function loadData() {
+  try {
+    const entries = await supaFetch('entries?select=*&order=timestamp.asc');
+    const placeholders = await supaFetch('placeholders?select=*');
+    data.entries = {};
+    data.placeholders = {};
+    Object.keys(COMPETENTIES).forEach(k => { data.entries[k] = []; });
+    entries.forEach(e => {
+      if (data.entries[e.competentie] !== undefined) {
+        data.entries[e.competentie].push({ id: e.id, week: e.week, date: e.date, situation: e.situation, content: e.content, raw: e.raw, timestamp: e.timestamp });
+      }
+    });
+    placeholders.forEach(p => {
+      if (p.key === 'bijlagen_overrides') {
+        try { data.bijlagen_overrides = JSON.parse(p.value); } catch(e) {}
+      } else if (p.key === 'manual_bijlagen') {
+        try { data.manual_bijlagen = JSON.parse(p.value); } catch(e) {}
+      } else if (p.key === 'zelfoordeel') {
+        try { data.zelfoordeel = JSON.parse(p.value); } catch(e) {}
+      } else if (p.key === 'suggesties') {
+        try { data.suggesties = JSON.parse(p.value); } catch(e) {}
+      } else {
+        data.placeholders[p.key] = p.value;
+      }
+    });
+  } catch(e) {
+    console.error('Supabase load error:', e);
+    // Fallback to localStorage
+    try { const r = localStorage.getItem('procesverslag-v2'); if (r) { const d = JSON.parse(r); data = d; } } catch(e2) {}
+    if (!data.entries) data.entries = {};
+    if (!data.placeholders) data.placeholders = {};
+    Object.keys(COMPETENTIES).forEach(k => { if (!data.entries[k]) data.entries[k] = []; });
+  }
+  renderAll();
+}
+
+async function saveEntry(competentie, entry) {
+  try {
+    const rows = await supaFetch('entries', 'POST', { competentie, week: entry.week, date: entry.date, situation: entry.situation, content: entry.content, raw: entry.raw, timestamp: entry.timestamp });
+    if (rows && rows[0]) entry.id = rows[0].id;
+  } catch(e) { console.error('Save entry error:', e); }
+}
+
+async function deleteEntryDB(id) {
+  try { await supaFetch('entries?id=eq.' + id, 'DELETE'); } catch(e) { console.error('Delete error:', e); }
+}
+
+async function savePlaceholder(key, value) {
+  try {
+    const existing = await supaFetch('placeholders?key=eq.' + key);
+    if (existing && existing.length > 0) {
+      await supaFetch('placeholders?key=eq.' + key, 'PATCH', { value });
+    } else {
+      await supaFetch('placeholders', 'POST', { key, value });
+    }
+  } catch(e) { console.error('Save placeholder error:', e); }
+}
+
+function saveData() {
+  // legacy fallback — main saving is done via saveEntry/savePlaceholder
+  try { localStorage.setItem('procesverslag-v2', JSON.stringify(data)); } catch(e) {}
+}
+
+function switchWorkTab(tab) {
+  document.getElementById('tab-overzicht').style.display = tab === 'overzicht' ? 'block' : 'none';
+  document.getElementById('tab-geschiedenis').style.display = tab === 'geschiedenis' ? 'block' : 'none';
+  document.getElementById('tab-bijlagen').style.display = tab === 'bijlagen' ? 'block' : 'none';
+  document.querySelectorAll('.work-tab').forEach(b => b.classList.remove('active'));
+  const tabIdx = {'overzicht':0,'geschiedenis':1,'bijlagen':2};
+  document.querySelectorAll('.work-tab')[tabIdx[tab]||0].classList.add('active');
+  if (tab === 'geschiedenis') renderGeschiedenis();
+  if (tab === 'bijlagen') renderBijlagenWerkmodus();
+}
+
+function renderGeschiedenis() {
+  const list = document.getElementById('geschiedenis-list');
+  // Gather all entries across competencies with their key
+  let all = [];
+  Object.entries(data.entries || {}).forEach(([key, entries]) => {
+    entries.forEach((e, idx) => {
+      all.push({ ...e, compKey: key, compIdx: idx });
+    });
+  });
+  // Sort chronologically descending
+  all.sort((a, b) => {
+    // Sort by date field first, fall back to timestamp
+    const da = a.date ? new Date(a.date) : new Date(a.timestamp || 0);
+    const db = b.date ? new Date(b.date) : new Date(b.timestamp || 0);
+    return da - db; // chronological: oldest first
+  });
+
+  if (!all.length) {
+    list.innerHTML = '<div class="empty-state">Nog geen reflecties toegevoegd.</div>';
+    return;
+  }
+
+  list.innerHTML = all.map((e, i) => {
+    const sugs = (data.suggesties && data.suggesties[e.timestamp]) || null;
+    const suggestiesHTML = buildSuggestiesHTML(e.timestamp, sugs, i);
+    return `
+    <div class="gesch-card" id="gesch-${i}">
+      <div class="gesch-card-header">
+        <div class="gesch-card-meta">
+          <span class="entry-week">${e.week || ''}</span>
+          <span class="entry-date">${e.date || ''}</span>
+          <span class="gesch-comp-tag">${COMPETENTIES[e.compKey]?.label || e.compKey}</span>
+        </div>
+        <div class="gesch-card-actions">
+          <button class="gesch-edit-btn" onclick="startGeschEdit(${i})">Bewerk</button>
+          <button class="gesch-del-btn" onclick="deleteGeschEntry(${i})">Verwijder</button>
+        </div>
+      </div>
+      <div class="gesch-situation">${e.situation || ''}</div>
+      <div class="gesch-content" id="gesch-content-${i}">${e.content}</div>
+      ${e.raw ? `<details style="margin-top:0.75rem"><summary style="font-size:12px;color:var(--muted);cursor:pointer">Aanpak & leermoment bekijken</summary><div style="font-size:13px;color:var(--muted);line-height:1.65;margin-top:0.5rem;padding:0.75rem;background:var(--raised);border-radius:6px;white-space:pre-wrap">${e.raw}</div></details>` : ''}
+      ${extractEyeopener(e.raw) ? `<div class="eyeopener-block"><div class="eyeopener-label">💡 Eye-opener</div><div class="eyeopener-text">${extractEyeopener(e.raw)}</div><button onclick="deleteEyeopener('${e.compKey}',${i})" style="margin-top:6px;background:transparent;border:0.5px solid var(--border);border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;color:var(--muted);font-family:inherit">Verwijder</button></div>` : ''}
+      ${suggestiesHTML}
+      <textarea class="gesch-edit-area" id="gesch-area-${i}">${e.content}</textarea>
+      <div class="gesch-edit-actions" id="gesch-actions-${i}">
+        <button class="save-btn" onclick="saveGeschEdit(${i}, '${e.compKey}', ${e.compIdx}, ${e.id || 'null'})">Opslaan</button>
+        <button class="cancel-btn" onclick="cancelGeschEdit(${i})">Annuleer</button>
+      </div>
+    </div>
+  `}).join('');
+}
+
+async function deleteEyeopener(compKey, idx) {
+  if (!confirm('Eye-opener verwijderen uit deze reflectie?')) return;
+  const entry = data.entries[compKey] && data.entries[compKey][idx];
+  if (!entry) return;
+  // Remove eye-opener from raw field
+  if (entry.raw && entry.raw.includes('Eye-opener:')) {
+    entry.raw = entry.raw.substring(0, entry.raw.indexOf('\n\nEye-opener:')).trim();
+    if (entry.id) {
+      try { await supaFetch('entries?id=eq.' + entry.id, 'PATCH', { raw: entry.raw }); } catch(e) {}
+    }
+    saveData();
+    renderAll();
+    renderGeschiedenis();
+    showToast('Eye-opener verwijderd');
+  }
+}
+
+function extractEyeopener(raw) {
+  if (!raw) return '';
+  const marker = 'Eye-opener: ';
+  const idx = raw.indexOf(marker);
+  if (idx === -1) return '';
+  return raw.substring(idx + marker.length).trim();
+}
+
+function buildSuggestiesHTML(timestamp, sugs, cardIdx) {
+  if (!sugs) return `<div class="suggesties-block" id="sugblok-${timestamp}"><span class="suggesties-loading">Verbeterpunten worden geladen...</span></div>`;
+  if (sugs.items && sugs.items.length === 0) return '';
+  const items = sugs.items || [];
+  const dismissed = sugs.dismissed || [];
+  const zichtbaar = items.filter((_,i) => !dismissed.includes(i));
+  const verborgen = items.filter((_,i) => dismissed.includes(i));
+  if (items.length === 0) return '';
+  return `<div class="suggesties-block" id="sugblok-${timestamp}">
+    <button class="suggesties-toggle" onclick="toggleSuggesties(${timestamp})">
+      <span class="sug-arrow">▶</span>
+      <span>💡 ${zichtbaar.length} verbeterpunt${zichtbaar.length !== 1 ? 'en' : ''} voor je begeleiders</span>
+    </button>
+    <div class="suggesties-list" id="suglist-${timestamp}">
+      ${items.map((s, si) => `
+        <div class="suggestie-item${dismissed.includes(si) ? ' dismissed' : ''}" id="sugitem-${timestamp}-${si}">
+          <div class="suggestie-check" onclick="dismissSuggestie(${timestamp}, ${si})" title="Wegklikken">✓</div>
+          <span>${s}</span>
+        </div>`).join('')}
+      ${verborgen.length > 0 ? `<span class="suggesties-toon-verborgen" id="sugshow-${timestamp}" style="display:inline" onclick="toonVerborgenSuggesties(${timestamp})">↩ ${verborgen.length} verborgen punt${verborgen.length!==1?'en':''} terugzetten</span>` : ''}
+    </div>
+  </div>`;
+}
+
+function toggleSuggesties(timestamp) {
+  const list = document.getElementById(`suglist-${timestamp}`);
+  const btn = document.querySelector(`#sugblok-${timestamp} .suggesties-toggle`);
+  if (!list) return;
+  list.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+
+async function dismissSuggestie(timestamp, idx) {
+  if (!data.suggesties) data.suggesties = {};
+  if (!data.suggesties[timestamp]) data.suggesties[timestamp] = { items: [], dismissed: [] };
+  if (!data.suggesties[timestamp].dismissed) data.suggesties[timestamp].dismissed = [];
+  if (!data.suggesties[timestamp].dismissed.includes(idx)) {
+    data.suggesties[timestamp].dismissed.push(idx);
+  }
+  await savePlaceholder('suggesties', JSON.stringify(data.suggesties));
+  const el = document.getElementById(`sugitem-${timestamp}-${idx}`);
+  if (el) el.classList.add('dismissed');
+  // update counter
+  const items = data.suggesties[timestamp].items || [];
+  const dismissed = data.suggesties[timestamp].dismissed || [];
+  const zichtbaar = items.filter((_,i) => !dismissed.includes(i));
+  const toggleBtn = document.querySelector(`#sugblok-${timestamp} .suggesties-toggle span:last-child`);
+  if (toggleBtn) toggleBtn.textContent = `💡 ${zichtbaar.length} verbeterpunt${zichtbaar.length!==1?'en':''} voor je begeleiders`;
+  const showBtn = document.getElementById(`sugshow-${timestamp}`);
+  if (showBtn) { showBtn.style.display = 'inline'; showBtn.textContent = `↩ ${dismissed.length} verborgen punt${dismissed.length!==1?'en':''} terugzetten`; }
+}
+
+async function toonVerborgenSuggesties(timestamp) {
+  if (!data.suggesties || !data.suggesties[timestamp]) return;
+  data.suggesties[timestamp].dismissed = [];
+  await savePlaceholder('suggesties', JSON.stringify(data.suggesties));
+  renderGeschiedenis();
+  // reopen the list
+  setTimeout(() => {
+    const list = document.getElementById(`suglist-${timestamp}`);
+    const btn = document.querySelector(`#sugblok-${timestamp} .suggesties-toggle`);
+    if (list) list.classList.add('open');
+    if (btn) btn.classList.add('open');
+  }, 50);
+}
+
+async function generateSuggesties(entry) {
+  const system = `Je bent een kritische studiecoach voor HBO-afstudeerder Gijs De Kremer (Ruimtelijke Ontwikkeling, Haagse Hogeschool). Hij schrijft een procesverslag over Urban Digital Twins in Laakhaven-Oost.
+
+Geef precies 3 concrete verbeterpunten die helpen om het probleem en de beschreven oplossing beter te verwoorden richting begeleiders. Focus op:
+- Wat ontbreekt er in de beschrijving om de situatie volledig te begrijpen?
+- Wat zou concreter of specifieker kunnen?
+- Wat toont zijn professionaliteit beter als hij het anders formuleert?
+
+Schrijf elk punt als één korte, directe zin (max 20 woorden). Geen nummering, geen bullets.
+Reageer ALLEEN met geldig JSON: {"punten":["punt1","punt2","punt3"]}`;
+
+  try {
+    const res = await callAPI([{ role: 'user', content: `Probleem: ${entry.situation}\n\nAanpak: ${entry.raw||entry.content}` }], system, 300);
+    const result = await res.json();
+    const rawText = result.content.map(i => i.text||'').join('');
+    const stripped = rawText.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    const parsed = JSON.parse(text);
+    return parsed.punten || [];
+  } catch(e) {
+    return [];
+  }
+}
+
+function startGeschEdit(i) {
+  document.getElementById(`gesch-content-${i}`).style.display = 'none';
+  document.getElementById(`gesch-area-${i}`).style.display = 'block';
+  document.getElementById(`gesch-actions-${i}`).style.display = 'flex';
+  document.getElementById(`gesch-area-${i}`).focus();
+}
+
+function cancelGeschEdit(i) {
+  document.getElementById(`gesch-content-${i}`).style.display = 'block';
+  document.getElementById(`gesch-area-${i}`).style.display = 'none';
+  document.getElementById(`gesch-actions-${i}`).style.display = 'none';
+}
+
+async function saveGeschEdit(i, compKey, compIdx, dbId) {
+  const val = document.getElementById(`gesch-area-${i}`).value.trim();
+  if (!val) return;
+  // Update in memory
+  if (data.entries[compKey] && data.entries[compKey][compIdx]) {
+    data.entries[compKey][compIdx].content = val;
+  }
+  // Update in Supabase
+  if (dbId) {
+    try { await supaFetch('entries?id=eq.' + dbId, 'PATCH', { content: val }); } catch(e) {}
+  }
+  document.getElementById(`gesch-content-${i}`).textContent = val;
+  cancelGeschEdit(i);
+  renderAll();
+  showToast('Reflectie bijgewerkt');
+}
+
+async function deleteGeschEntry(i) {
+  if (!confirm('Weet je zeker dat je deze reflectie wil verwijderen?')) return;
+  // Find entry in all sorted list
+  let all = [];
+  Object.entries(data.entries || {}).forEach(([key, entries]) => {
+    entries.forEach((e, idx) => { all.push({ ...e, compKey: key, compIdx: idx }); });
+  });
+  all.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+  const e = all[i];
+  if (!e) return;
+  if (e.id) await deleteEntryDB(e.id);
+  data.entries[e.compKey].splice(e.compIdx, 1);
+  renderAll();
+  renderGeschiedenis();
+  showToast('Reflectie verwijderd');
+}
+
+function renderAll() {
+  renderDashboard();
+  renderPresCompetencies();
+  renderConclusieTable();
+  renderPlaceholders();
+  renderBijlagen();
+  renderBijlagenCheckboxes();
+}
+
+function renderDashboard() {
+  const grid = document.getElementById('comp-grid');
+  grid.innerHTML = '';
+  Object.entries(COMPETENTIES).forEach(([key, comp]) => {
+    const entries = data.entries[key] || [];
+    const count = entries.length;
+    const card = document.createElement('div');
+    card.className = 'comp-card';
+    card.onclick = () => showDetail(key);
+    const withBewijs = entries.filter(e => e.bijlagen && e.bijlagen.length > 0).length;
+    const totalBijlagen = entries.reduce((sum, e) => sum + ((e.bijlagen && e.bijlagen.length) || 0), 0);
+    card.innerHTML = `
+      <div class="comp-card-header">
+        <div class="comp-name">${comp.label}${comp.verplicht ? ' <span style="font-size:10px;color:var(--accent)">(verplicht)</span>' : ''}</div>
+        <div class="comp-badge">${count} moment${count !== 1 ? 'en' : ''}</div>
+      </div>
+      <div class="comp-desc">${comp.desc}</div>
+      <div style="margin-top:1rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+          <span style="font-size:11px;color:var(--muted)">Momenten</span>
+          <span style="font-size:11px;color:var(--muted)">${count}</span>
+        </div>
+        <div class="comp-progress"><div class="comp-progress-bar" style="width:${Math.min(count*14,100)}%"></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;margin-bottom:3px">
+          <span style="font-size:11px;color:var(--muted)">Bijlagen gekoppeld</span>
+          <span style="font-size:11px;color:${withBewijs > 0 ? 'var(--accent-dark)' : 'var(--muted)'}">${count > 0 ? withBewijs + '/' + count : '—'}</span>
+        </div>
+        <div class="comp-progress"><div class="comp-progress-bar" style="width:${count > 0 ? Math.round((withBewijs/count)*100) : 0}%;background:${withBewijs === count && count > 0 ? 'var(--accent)' : withBewijs > 0 ? 'var(--warn)' : 'var(--border)'}"></div></div>
+      </div>
+      ${count > 0 ? `<div style="margin-top:0.6rem;font-size:11px;color:${withBewijs > 0 ? 'var(--accent-dark)' : 'var(--muted)'}">
+        ${withBewijs > 0
+          ? `✓ ${totalBijlagen} bijlage${totalBijlagen!==1?'s':''} gekoppeld aan ${withBewijs} moment${withBewijs!==1?'en':''}`
+          : ''}
+      </div>` : ''}
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function showDetail(key) {
+  const comp = COMPETENTIES[key];
+  const entries = data.entries[key] || [];
+  document.getElementById('detail-title').textContent = comp.label;
+  document.getElementById('detail-criteria').textContent = comp.desc;
+  const list = document.getElementById('entries-list');
+  if (!entries.length) {
+    list.innerHTML = '<div class="empty-state">Nog geen reflecties voor deze competentie.</div>';
+  } else {
+    list.innerHTML = entries.map((e, i) => `
+      <div class="entry-card">
+        <button class="entry-delete" onclick="deleteEntry('${key}',${i})" title="Verwijder">×</button>
+        <div class="entry-meta">
+          <div class="entry-week">${e.week||''}</div>
+          <div class="entry-date">${e.date||''}</div>
+        </div>
+        <div class="entry-situation">${e.situation||''}</div>
+        ${e.bijlagen && e.bijlagen.length > 0 ? `<div style="font-size:12px;color:slategray;margin:0.4rem 0 0.6rem;display:flex;flex-wrap:wrap;gap:4px;align-items:center"><span style="opacity:0.6;font-size:14px">📎</span>${e.bijlagen.map(b => '<span style=\'background:var(--raised);border-radius:10px;padding:2px 8px\'>' + b + '</span>').join('')}</div>` : ''}
+        <div class="entry-content">${e.content}</div>
+        ${extractEyeopener(e.raw) ? `<div class="eyeopener-block"><div class="eyeopener-label">💡 Eye-opener</div><div class="eyeopener-text">${extractEyeopener(e.raw)}</div></div>` : ''}
+      </div>
+    `).join('');
+  }
+  document.getElementById('work-dashboard').style.display = 'none';
+  document.getElementById('work-detail').style.display = 'block';
+}
+
+function showDashboard() {
+  document.getElementById('work-dashboard').style.display = 'block';
+  document.getElementById('work-detail').style.display = 'none';
+}
+
+async function deleteEntry(key, idx) {
+  if (!confirm('Weet je zeker dat je deze reflectie wil verwijderen?')) return;
+  const entry = data.entries[key][idx];
+  if (entry && entry.id) await deleteEntryDB(entry.id);
+  data.entries[key].splice(idx, 1);
+  renderAll(); showDetail(key);
+}
+
+function renderPresCompetencies() {
+  const container = document.getElementById('pres-competenties');
+  container.innerHTML = '';
+  Object.entries(COMPETENTIES).forEach(([key, comp]) => {
+    const entries = data.entries[key] || [];
+    const badge = comp.verplicht ? ' <span style="font-size:11px;color:var(--accent)">(verplicht)</span>' : '';
+    let entriesHtml = entries.length
+      ? entries.map(e => `
+          <div class="comp-entry-pres">
+            <div class="comp-entry-pres-meta">${e.week||''} ${e.date ? '· '+e.date : ''} — ${e.situation||''}</div>
+            <div class="comp-entry-pres-text">${e.content}</div>
+            ${extractEyeopener(e.raw) ? `<div style="margin-top:0.5rem;padding:0.5rem 0.75rem;background:var(--accent-light);border-radius:6px;border-left:2px solid slategray;font-size:12px;color:var(--ink)"><strong style="color:slategray">Eye-opener:</strong> ${extractEyeopener(e.raw)}</div>` : ''}
+          </div>`).join('')
+      : '<div class="comp-empty">Nog geen reflecties toegevoegd voor deze competentie.</div>';
+    container.innerHTML += `
+      <div class="comp-section">
+        <div class="comp-section-header">
+          <div class="comp-section-title">3.${Object.keys(COMPETENTIES).indexOf(key)+1} ${comp.label}${badge}</div>
+          <div class="comp-section-badge">${entries.length} moment${entries.length!==1?'en':''}</div>
+        </div>
+        ${entriesHtml}
+      </div>`;
+  });
+}
+
+function renderConclusieTable() {
+  const tbody = document.getElementById('conclusie-tbody');
+  tbody.innerHTML = '';
+  Object.entries(COMPETENTIES).forEach(([key, comp]) => {
+    const count = (data.entries[key]||[]).length;
+    const status = count >= 3 ? 'Voldoende onderbouwd' : count > 0 ? 'In ontwikkeling' : 'Nog toe te voegen';
+    const dot = count >= 3 ? 'dot-green' : 'dot-amber';
+    const saved = data.zelfoordeel && data.zelfoordeel[key] || {};
+    const oordeel = saved.oordeel || '';
+    const toelichting = saved.toelichting || '';
+    tbody.innerHTML += `<tr>
+      <td style="font-weight:500">${comp.label}</td>
+      <td style="color:var(--muted)">${count} reflectiemoment${count!==1?'en':''}</td>
+      <td><span class="status-dot ${dot}"></span>${status}</td>
+      <td>
+        <select class="zelfoordeel-select" onchange="saveZelfoordeel('${key}', this.value, null)">
+          <option value="" ${!oordeel?'selected':''}>— kies —</option>
+          <option value="Voldoende" ${oordeel==='Voldoende'?'selected':''}>Voldoende</option>
+          <option value="Goed" ${oordeel==='Goed'?'selected':''}>Goed</option>
+          <option value="Excellent" ${oordeel==='Excellent'?'selected':''}>Excellent</option>
+        </select>
+      </td>
+      <td>
+        <input class="toelichting-input" type="text" placeholder="Één zin toelichting..." value="${toelichting.replace(/"/g,'&quot;')}" onblur="saveZelfoordeel('${key}', null, this.value)" />
+      </td>
+    </tr>`;
+  });
+}
+
+async function saveZelfoordeel(key, oordeel, toelichting) {
+  if (!data.zelfoordeel) data.zelfoordeel = {};
+  if (!data.zelfoordeel[key]) data.zelfoordeel[key] = {};
+  if (oordeel !== null) data.zelfoordeel[key].oordeel = oordeel;
+  if (toelichting !== null) data.zelfoordeel[key].toelichting = toelichting;
+  await savePlaceholder('zelfoordeel', JSON.stringify(data.zelfoordeel));
+  showToast('Zelfoordeel opgeslagen');
+}
+
+function renderPlaceholders() {
+  const ids = ['intro','context','doel','leeswijzer','aanpak','bronnen','koppeling','fasen','leren','sterk','verbeter','werkveld','vooruitblik','bijlagen'];
+  ids.forEach(id => {
+    const val = data.placeholders[id] || '';
+    const el = document.getElementById(`ph-${id}-text`);
+    if (!el) return;
+    if (val) { el.textContent = val; el.classList.remove('empty'); }
+  });
+}
+
+// Edit placeholder
+function startEdit(blockId) {
+  const id = blockId.replace('ph-', '');
+  const area = document.getElementById(`${blockId}-area`);
+  const actions = document.getElementById(`${blockId}-actions`);
+  const textEl = document.getElementById(`${blockId}-text`);
+  const editBtn = document.querySelector(`#${blockId} .edit-btn`);
+  area.value = data.placeholders[id] || '';
+  area.style.display = 'block';
+  actions.style.display = 'flex';
+  textEl.style.display = 'none';
+  editBtn.style.display = 'none';
+  area.focus();
+}
+
+async function saveEdit(blockId) {
+  const id = blockId.replace('ph-', '');
+  const area = document.getElementById(`${blockId}-area`);
+  const val = area.value.trim();
+  data.placeholders[id] = val;
+  await savePlaceholder(id, val);
+  const textEl = document.getElementById(`${blockId}-text`);
+  const editBtn = document.querySelector(`#${blockId} .edit-btn`);
+  textEl.textContent = val || getPlaceholderDefault(id);
+  if (val) textEl.classList.remove('empty'); else textEl.classList.add('empty');
+  textEl.style.display = 'block';
+  area.style.display = 'none';
+  document.getElementById(`${blockId}-actions`).style.display = 'none';
+  editBtn.style.display = '';
+  showToast('Opgeslagen');
+}
+
+function cancelEdit(blockId) {
+  const area = document.getElementById(`${blockId}-area`);
+  const actions = document.getElementById(`${blockId}-actions`);
+  const textEl = document.getElementById(`${blockId}-text`);
+  const editBtn = document.querySelector(`#${blockId} .edit-btn`);
+  area.style.display = 'none';
+  actions.style.display = 'none';
+  textEl.style.display = 'block';
+  editBtn.style.display = '';
+}
+
+function getPlaceholderDefault(id) {
+  const defaults = {
+    intro: "Klik op 'Bewerk' om je persoonlijke introductie toe te voegen.",
+    context: "Klik op 'Bewerk' om de projectcontext toe te voegen.",
+    doel: "Klik op 'Bewerk' om het doel van de digital twin te beschrijven.",
+    leeswijzer: "Klik op 'Bewerk' om de leeswijzer toe te voegen.",
+    aanpak: "Klik op 'Bewerk' om de aanpak te beschrijven.",
+    bronnen: "Klik op 'Bewerk' om de bronnen te beschrijven.",
+    koppeling: "Klik op 'Bewerk' om de koppeling met bewijsmateriaal te beschrijven.",
+    fasen: "Klik op 'Bewerk' om de fasen en kenterpunten te beschrijven.",
+    leren: "Klik op 'Bewerk' om je kennisevolutie te beschrijven.",
+    sterk: "Klik op 'Bewerk' om je sterke punten te beschrijven.",
+    verbeter: "Klik op 'Bewerk' om je verbeterpunten te beschrijven.",
+    werkveld: "Klik op 'Bewerk' om je werkveldgereedheid te beschrijven.",
+    vooruitblik: "Klik op 'Bewerk' om je vooruitblik te beschrijven.",
+    bijlagen: "Klik op 'Bewerk' om bijlagen toe te voegen."
+  };
+  return defaults[id] || "Klik op 'Bewerk' om tekst toe te voegen.";
+}
+
+// Process reflection via AI
+async function processReflection() {
+  const week = document.getElementById('inp-week').value.trim();
+  const date = document.getElementById('inp-date').value;
+  const situation = document.getElementById('inp-situation').value.trim();
+  const aanpak = document.getElementById('inp-aanpak').value.trim();
+  const reflection = document.getElementById('inp-reflection').value.trim();
+  const selectedBijlagen = typeof getSelectedBijlagen === 'function' ? getSelectedBijlagen() : [];
+  const eyeopener = document.getElementById('inp-eyeopener').value.trim();
+  const geselecteerdeComps = getSelectedComps();
+  const deelproduct = '';
+  if (!situation || !aanpak) { alert('Vul minimaal het probleem en de aanpak in.'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  const proc = document.getElementById('processing-indicator');
+  btn.disabled = true; proc.classList.add('visible');
+  document.getElementById('processing-text').textContent = 'Reflectie wordt verwerkt per competentie...';
+
+  // Bereken huidige bijlagenummer voor verwijzingen
+  const sortedForNr = getSortedEntries();
+  const bijlageStart = sortedForNr.length + 1;
+
+  const compSturing = geselecteerdeComps.length > 0
+    ? '\n\nBELANGRIJK: De student heeft aangegeven dat deze situatie hoort bij de volgende competenties: ' + geselecteerdeComps.map(k => COMPETENTIES[k]?.label).join(', ') + '. Schrijf voor deze competenties altijd een uitgebreide, sterke paragraaf. Voor andere competenties schrijf je alleen tekst als de situatie daar ook echt iets van laat zien — anders geef je null terug.'
+    : '';
+
+  const deelproductContext = deelproduct
+    ? `\n\nGekoppeld deelproduct als bewijs: "${deelproduct}". Verwerk een verwijzing hiernaar in de tekst, naast of in plaats van de generieke bijlageverwijzing.`
+    : '';
+
+  const system = `Je bent assistent bij het schrijven van een procesverslag voor HBO-student Ruimtelijke Ontwikkeling Gijs De Kremer. Project: Digital Twin voor Laakhaven-Oost, Den Haag. Gijs onderzoekt stakeholdereisen voor een urban digital twin binnen de context van ruimtelijke ontwikkeling en duurzaamheid in Den Haag.
+
+Je ontvangt een beschrijving van een probleem of uitdaging, de aanpak en het leermoment. Schrijf per relevante competentie een onderbouwde paragraaf in ik-vorm vanuit een reflectieve, lerende toon — alsof Gijs openlijk beschrijft wat hij nog niet wist, hoe hij dat ontdekte en wat hij daarvan heeft geleerd. Dit wordt ook wel een growth mindset schrijfstijl genoemd.
+
+Schrijfregels:
+- Toon: reflectief en lerend. Gijs wist iets niet, liep ergens tegenaan, ontdekte iets nieuws. Schrijf dit eerlijk en persoonlijk — geen zelfverzekerd rapport, maar een authentiek leerverslag.
+- Structuur: lange zinnen zijn prima, maar geen herhaling van dezelfde informatie. Elke zin voegt iets nieuws toe. Houd het leesbaar en vloeiend, maar wel specifiek genoeg om als bewijs te dienen voor de competentie.
+- Opbouw per paragraaf: (1) open met wat het probleem of de uitdaging was en wat Gijs nog niet wist, (2) beschrijf concreet wat hij deed en waarom, (3) sluit af met wat hij heeft geleerd en hoe dit zijn professionele ontwikkeling heeft beïnvloed.
+- Als er een eye-opener is meegegeven, verwerk dit als het scharnierpunt — het moment waarop iets doordong.
+- Als informatie ontbreekt om de paragraaf concreet te maken, laat dan een aanvulzin in de tekst staan zoals: [voeg hier de naam van de stakeholder in] of [beschrijf hier het specifieke resultaat]. Doe dit alleen als het de tekst aanzienlijk concreter maakt.
+- Verwerk ALTIJD een verwijzing naar de bijlage als er bijlagen meegegeven zijn: gebruik 'Zoals te zien in Bijlage ${bijlageStart}...' of 'In Bijlage ${bijlageStart} is dit gedocumenteerd.' Sla dit alleen over als er geen bijlagen zijn.${compSturing}${deelproductContext}
+- Gebruik GEEN aanhalingstekens (") in de tekst — gebruik enkelvoudige aanhalingstekens of herformuleer.
+
+Competenties: professionaliseren, onderzoeken, ontwerpen, managen, specificeren, communiceren.
+Schrijf alleen voor competenties die duidelijk zichtbaar zijn in de situatie. Geef null voor competenties die niet van toepassing zijn.
+
+Reageer ALLEEN met geldig JSON, geen markdown. Gebruik geen aanhalingstekens in de waarden:
+{"professionaliseren":"tekst of null","onderzoeken":"tekst of null","ontwerpen":"tekst of null","managen":"tekst of null","specificeren":"tekst of null","communiceren":"tekst of null"}`;
+
+  try {
+    console.log('1. Start verwerking');
+    console.log('2. API key aanwezig:', !!getApiKey());
+    console.log('3. Situatie:', situation.substring(0, 50));
+    const bijlagenTekst = selectedBijlagen && selectedBijlagen.length ? '\n\nGekoppelde bijlagen:\n' + selectedBijlagen.map(b => '- ' + b.title + (b.desc ? ': ' + b.desc : '')).join('\n') : '';
+    const userMsg = [
+      'Week: ' + (week||'?') + ' | Datum: ' + (date||'?'),
+      'Probleem/uitdaging: ' + situation,
+      '',
+      'Aanpak:',
+      aanpak,
+      '',
+      'Leermoment/groei:',
+      reflection||'(niet ingevuld)',
+      eyeopener ? '\nEye-opener of persoonlijk inzicht:\n' + eyeopener : '',
+      bijlagenTekst
+    ].join('\n');
+    const res = await callAPI([{ role: 'user', content: userMsg }], system, 2000);
+    console.log('4. API call gedaan, status:', res.status);
+    const result = await res.json();
+    console.log('5. Response:', JSON.stringify(result).substring(0, 200));
+    if (result.error) throw new Error(result.error.message || 'API fout: ' + JSON.stringify(result.error));
+    // Extract text from content blocks
+    console.log('6a. Content blokken:', JSON.stringify(result.content));
+    let rawText = '';
+    if (Array.isArray(result.content)) {
+      rawText = result.content.filter(b => b.type === 'text').map(b => b.text || '').join('');
+    } else if (typeof result.content === 'string') {
+      rawText = result.content;
+    }
+    console.log('6b. RawText lengte:', rawText.length, 'eerste 200:', rawText.substring(0, 200));
+    // Find JSON object by locating first { and last }
+    const si = rawText.indexOf('{');
+    const ei = rawText.lastIndexOf('}');
+    if (si === -1 || ei === -1 || ei <= si) throw new Error('Geen JSON in response. RawText: ' + rawText.substring(0, 300));
+    const jsonStr = rawText.substring(si, ei + 1);
+    console.log('7. JSON lengte:', jsonStr.length, 'eerste 100:', jsonStr.substring(0, 100));
+    const parsed = JSON.parse(jsonStr);
+    console.log('8. Parsed OK, keys:', Object.keys(parsed));
+    let added = 0;
+    const savedEntries = [];
+    for (const [key, val] of Object.entries(parsed)) {
+      if (val && val !== 'null' && data.entries[key] !== undefined) {
+        const entry = { week, date, situation, content: val, raw: `Aanpak: ${aanpak}\n\nLeermoment: ${reflection}${eyeopener ? '\n\nEye-opener: '+eyeopener : ''}`, deelproduct: deelproduct || '', bijlagen: (selectedBijlagen||[]).map(b => b.title), timestamp: Date.now() };
+        await saveEntry(key, entry);
+        data.entries[key].push(entry);
+        savedEntries.push(entry);
+        added++;
+      }
+    }
+    renderAll(); clearForm();
+    proc.classList.remove('visible'); btn.disabled = false;
+    showToast(`Verwerkt — ${added} competentie${added!==1?'s':''} bijgewerkt`);
+
+    // Genereer suggesties voor de eerste entry (situation is gelijk voor alle)
+    if (savedEntries.length > 0) {
+      const representEntry = savedEntries[0];
+      document.getElementById('processing-text').textContent = 'Verbeterpunten genereren...';
+      proc.classList.add('visible');
+      const punten = await generateSuggesties(representEntry);
+      if (punten.length > 0) {
+        if (!data.suggesties) data.suggesties = {};
+        data.suggesties[representEntry.timestamp] = { items: punten, dismissed: [] };
+        // Koppel dezelfde suggesties aan alle entries met dezelfde situatie
+        savedEntries.forEach(e => {
+          data.suggesties[e.timestamp] = { items: punten, dismissed: [] };
+        });
+        await savePlaceholder('suggesties', JSON.stringify(data.suggesties));
+      }
+      proc.classList.remove('visible');
+    }
+  } catch(e) {
+    console.error('FOUT in verwerking:', e.message, e.stack);
+    document.getElementById('processing-text').textContent = 'Fout: ' + (e.message || 'Probeer opnieuw');
+    btn.disabled = false;
+  }
+}
+
+async function generateReflection() {
+  const allEntries = Object.entries(data.entries||{}).map(([key, entries]) => {
+    if (!entries.length) return '';
+    return `## ${COMPETENTIES[key].label}\n` + entries.map(e => `- ${e.situation}: ${e.raw||e.content}`).join('\n');
+  }).filter(Boolean).join('\n\n');
+  if (!allEntries) { alert('Voeg eerst reflecties toe via de werkmodus.'); return; }
+
+  const sections = ['fasen', 'leren', 'sterk', 'verbeter'];
+  const prompts = {
+    fasen: 'Schrijf een alinea over de belangrijkste fasen en eye-opener momenten in het afstudeertraject.',
+    leren: 'Schrijf een alinea over hoe het begrip van digital twins zich heeft ontwikkeld en wat dit betekent voor het RO-perspectief.',
+    sterk: 'Schrijf een alinea over 3-5 sterke competentiegebieden, onderbouwd met concrete voorbeelden.',
+    verbeter: 'Schrijf een alinea over verbeterpunten en de persoonlijke leerroute.'
+  };
+
+  for (const section of sections) {
+    try {
+      const res = await callAPI([{ role: 'user', content: `${prompts[section]} Schrijf in ik-vorm voor student Gijs De Kremer, afstudeerproject Digital Twin Laakhaven-Oost. Gebruik deze reflecties:\n${allEntries}` }], '', 400);
+      const result = await res.json();
+      const txt = result.content.map(i=>i.text||'').join('').trim();
+      data.placeholders[section] = txt;
+      await savePlaceholder(section, txt);
+      const textEl = document.getElementById(`ph-${section}-text`);
+      if (textEl) { textEl.textContent = txt; textEl.classList.remove('empty'); }
+    } catch(e) {}
+  }
+  showToast('Reflectie gegenereerd');
+}
+
+function clearForm() {
+  ['inp-week','inp-situation','inp-aanpak','inp-reflection','inp-eyeopener'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.querySelectorAll('#bijlagen-checkboxes .bijlage-pill').forEach(p => {
+    p.classList.remove('selected');
+    p.style.background = 'var(--surface)';
+    p.style.borderColor = 'var(--border)';
+    p.style.color = 'var(--muted)';
+    const c = p.querySelector('.pill-check');
+    if (c) c.textContent = '○';
+  });
+  document.querySelectorAll('.comp-pill.selected').forEach(p => p.classList.remove('selected'));
+  const hint = document.getElementById('situation-hint');
+  if (hint) hint.style.display = 'none';
+}
+
+
+const COMP_HINTS = {
+  professionaliseren: {
+    criterium: 'Je toont aan dat je bewust stuurt op je eigen professionele ontwikkeling. Je maakt keuzes, verantwoordt die en houdt rekening met de opdrachtgever en maatschappij.',
+    bewijs: [
+      'Situatie waarin je feedback van begeleiders hebt verwerkt in je aanpak',
+      'Keuze die je zelf hebt gemaakt over je werkwijze en die je kunt onderbouwen',
+      'Moment waarop je proactief hebt gehandeld zonder dat het je opgelegd werd',
+      'Deelproduct: herziene versie van een document na begeleidersgesprek'
+    ]
+  },
+  onderzoeken: {
+    criterium: 'Je formuleert een onderzoeksvraag, kiest een methode, verzamelt data en analyseert deze. Je verslaglegging is reproduceerbaar.',
+    bewijs: [
+      'Onderzoeksopzet of methodeverantwoording (bijlage)',
+      'Interviewverslagen of enquêteresultaten met stakeholders',
+      'Bronkeuze die je hebt verantwoord — waarom deze bronnen, niet andere',
+      'Analysematrix of coderingsschema van kwalitatieve data'
+    ]
+  },
+  ontwerpen: {
+    criterium: 'Je ontwikkelt een toekomstbestendige oplossing, weegt alternatieven af en houdt rekening met opdrachtgever, maatschappij en levenscyclus.',
+    bewijs: [
+      'Conceptueel raamwerk of model van de Digital Twin dat je hebt ontwikkeld',
+      'Schets of visualisatie van een mogelijke oplossingsrichting',
+      'Moment waarop je alternatieven hebt afgewogen en een keuze hebt verantwoord',
+      'Programma van eisen of ontwerpuitgangspunten'
+    ]
+  },
+  managen: {
+    criterium: 'Je stuurt het project en communiceert actief. Je gaat om met risico\'s, bewaakt belangen en toetst bij oplevering.',
+    bewijs: [
+      'Planning die je hebt bijgehouden of bijgesteld — inclusief de reden',
+      'Verslag van begeleidersgesprek of feedbackmoment',
+      'Moment waarop je een probleem in het projectproces hebt gesignaleerd en opgelost',
+      'Communicatie met opdrachtgever of organisatiebegeleider (e-mail, verslag)'
+    ]
+  },
+  specificeren: {
+    criterium: 'Je werkt een oplossing in detail uit, houdt rekening met randvoorwaarden, en toetst op haalbaarheid (technisch, juridisch, economisch, maatschappelijk).',
+    bewijs: [
+      'Stakeholdereisenanalyse: welke eisen zijn gesteld, hoe geprioriteerd',
+      'Moment waarop je een eis hebt vertaald naar een concrete specificatie',
+      'Toetsing van een oplossing aan meerdere haalbaarheidsaspecten',
+      'Overzicht van randvoorwaarden voor de Digital Twin Laakhaven-Oost'
+    ]
+  },
+  communiceren: {
+    criterium: 'Je communiceert doelbewust en doelgroepgericht. Je draagt bij aan kennisvorming en besluitvorming.',
+    bewijs: [
+      'Presentatie of verslag gericht op een externe partij (niet de begeleider)',
+      'Moment waarop je een complexe technische keuze hebt uitgelegd aan een niet-technische stakeholder',
+      'Schriftelijk product waarin je toon en inhoud hebt aangepast op de doelgroep',
+      'Overlegverslag of besluitenlijst van een stakeholderbijeenkomst'
+    ]
+  }
+};
+
+
+
+function switchMode(mode) {
+  document.querySelectorAll('.mode').forEach(m => m.classList.remove('active'));
+  document.getElementById('mode-' + mode).classList.add('active');
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.mode-tab')[mode==='work'?0:1].classList.add('active');
+}
+
+function showChapter(id) {
+  document.querySelectorAll('.pres-chapter').forEach(c => c.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.pres-nav-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'procesverslag-gijs-backup.json'; a.click();
+  showToast('JSON geëxporteerd');
+}
+
+function exportPDF() {
+  switchMode('presentation');
+  document.querySelectorAll('.pres-chapter').forEach(ch => ch.classList.add('active'));
+  document.querySelectorAll('.pres-nav-btn').forEach(b => b.classList.remove('active'));
+  setTimeout(() => { window.print(); }, 300);
+}
+
+function nl2p(s) { return s.split('\n').join('</p><p>'); }
+
+function exportWord() {
+  const chapters = [];
+  // Titelblad
+  chapters.push('<h1>Procesverslag</h1><p><em>Urban Digital Twins in Laakhaven-Oost</em></p><p>Gijs de Kremer &bull; Haagse Hogeschool &bull; 2026</p><hr>');
+  // Hoofdstuk 1
+  const phs = ['intro','context','doel','leeswijzer'];
+  const ph1titles = ['Persoonlijke introductie','Projectcontext en casusbeschrijving','Doel van de digital twin','Doel en leeswijzer'];
+  chapters.push('<h2>1. Inleiding en context</h2>');
+  phs.forEach((id,i) => {
+    const val = data.placeholders[id] || '';
+    if (val) chapters.push(`<h3>${ph1titles[i]}</h3><p>${nl2p(val)}</p>`);
+  });
+  // Hoofdstuk 2
+  const phs2 = ['aanpak','bronnen','koppeling'];
+  const ph2titles = ['Aanpak van het afstudeerproces','Bronnen en documentatie','Koppeling met competenties'];
+  chapters.push('<h2>2. Werkwijze, proces en bronnen</h2>');
+  phs2.forEach((id,i) => {
+    const val = data.placeholders[id] || '';
+    if (val) chapters.push(`<h3>${ph2titles[i]}</h3><p>${nl2p(val)}</p>`);
+  });
+  // Hoofdstuk 3 competenties
+  chapters.push('<h2>3. Competentiegericht deel</h2>');
+  Object.entries(COMPETENTIES).forEach(([key, comp], idx) => {
+    const entries = data.entries[key] || [];
+    chapters.push(`<h3>3.${idx+1} ${comp.label}</h3>`);
+    if (entries.length) {
+      entries.forEach(e => {
+        chapters.push(`<p><strong>${e.week||''} ${e.date||''} — ${e.situation||''}</strong></p><p>${e.content}</p>`);
+      });
+    } else {
+      chapters.push('<p><em>Nog geen reflecties voor deze competentie.</em></p>');
+    }
+  });
+  // Hoofdstuk 4
+  chapters.push('<h2>4. Integrale reflectie</h2>');
+  ['fasen','leren','sterk','verbeter'].forEach((id,i) => {
+    const titles = ['Fasen en kenterpunten','Leren rond digital twins','Sterke punten','Verbeterpunten'];
+    const val = data.placeholders[id] || '';
+    if (val) chapters.push(`<h3>${titles[i]}</h3><p>${nl2p(val)}</p>`);
+  });
+  // Hoofdstuk 5
+  chapters.push('<h2>5. Conclusie</h2>');
+  chapters.push('<h3>Competentietabel — eindoordeel</h3>');
+  chapters.push('<table style="width:100%;border-collapse:collapse;font-size:11pt;margin-bottom:1em"><thead><tr style="background:#f0f0f0"><th style="text-align:left;padding:6px 10px;border:1px solid #ccc">Competentie</th><th style="text-align:left;padding:6px 10px;border:1px solid #ccc">Momenten</th><th style="text-align:left;padding:6px 10px;border:1px solid #ccc">Zelfoordeel</th><th style="text-align:left;padding:6px 10px;border:1px solid #ccc">Toelichting</th></tr></thead><tbody>' +
+    Object.entries(COMPETENTIES).map(([key, comp]) => {
+      const count = (data.entries[key]||[]).length;
+      const saved = data.zelfoordeel && data.zelfoordeel[key] || {};
+      return `<tr><td style="padding:6px 10px;border:1px solid #ccc;font-weight:bold">${comp.label}</td><td style="padding:6px 10px;border:1px solid #ccc">${count} moment${count!==1?'en':''}</td><td style="padding:6px 10px;border:1px solid #ccc">${saved.oordeel||'—'}</td><td style="padding:6px 10px;border:1px solid #ccc">${saved.toelichting||'—'}</td></tr>`;
+    }).join('') +
+  '</tbody></table>');
+  ['werkveld','vooruitblik'].forEach((id,i) => {
+    const titles = ['Werkveldgereedheid','Vooruitblik'];
+    const val = data.placeholders[id] || '';
+    if (val) chapters.push(`<h3>${titles[i]}</h3><p>${nl2p(val)}</p>`);
+  });
+  // Hoofdstuk 6 bijlagen
+  chapters.push('<h2>6. Bijlagen</h2>');
+  chapters.push(buildBijlagenHTML(true));
+  const extra = data.placeholders['bijlagen'] || '';
+  if (extra) chapters.push(`<p>${nl2p(extra)}</p>`);
+
+  const html = `<html><head><meta charset="UTF-8"><title>Procesverslag Gijs De Kremer</title>
+  <style>body{font-family:Calibri,sans-serif;font-size:11pt;line-height:1.6;margin:2cm}
+  h1{font-size:20pt;margin-bottom:0.5em}h2{font-size:14pt;margin-top:1.5em;border-bottom:1px solid #ccc;padding-bottom:4px}
+  h3{font-size:12pt;margin-top:1em;color:slategray}p{margin:0.5em 0}hr{margin:1em 0}</style>
+  </head><body>${chapters.join('')}</body></html>`;
+
+  const blob = new Blob([html], { type: 'application/msword' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'procesverslag-gijs-de-kremer.doc';
+  a.click();
+  showToast('Word-document gedownload');
+}
+
+function getSortedEntries() {
+  let all = [];
+  Object.entries(data.entries||{}).forEach(([key, entries]) => {
+    entries.forEach((e, idx) => { all.push({...e, compKey: key, compIdx: idx}); });
+  });
+  all.sort((a, b) => {
+    const da = a.date ? new Date(a.date) : new Date(a.timestamp||0);
+    const db = b.date ? new Date(b.date) : new Date(b.timestamp||0);
+    return da - db;
+  });
+  return all;
+}
+
+function getBijlageNrForEntry(entry) {
+  const all = getSortedEntries();
+  const idx = all.findIndex(e => e.timestamp === entry.timestamp && e.compKey === entry.compKey);
+  return idx >= 0 ? idx + 1 : null;
+}
+
+function getBijlageOverride(timestamp) {
+  if (!data.bijlagen_overrides) return {};
+  return data.bijlagen_overrides[timestamp] || {};
+}
+
+function buildBijlagenHTML(forExport=false) {
+  // Hoofdstuk 6 toont ALLEEN handmatige bijlagen (documenten, e-mails, notulen etc.)
+  // Reflectie-entries horen in hoofdstuk 3, niet hier
+  const manuals = data.manual_bijlagen || [];
+  if (!manuals.length) return forExport
+    ? '<p><em>Nog geen bijlagen toegevoegd. Voeg bijlagen toe via het tabblad Bijlagen in de werkmodus.</em></p>'
+    : '<p style="font-size:13px;color:var(--muted);font-style:italic">Nog geen bijlagen toegevoegd. Ga naar het tabblad Bijlagen om documenten, e-mails of andere bewijslast toe te voegen.</p>';
+
+  return manuals.map((b, mi) => {
+    const nr = mi + 1;
+    if (forExport) return '<p><strong>Bijlage ' + nr + ':</strong> ' + (b.title||'') + (b.desc ? ' — ' + b.desc : '') + '</p>';
+    return '<div style="display:flex;gap:1rem;align-items:flex-start;padding:0.75rem 0;border-bottom:0.5px solid var(--border)">' +
+      '<span style="font-size:12px;font-weight:600;min-width:80px;color:slategray;padding-top:2px">Bijlage ' + nr + '</span>' +
+      '<div><div style="font-size:13px;color:var(--ink);font-weight:500">' + (b.title||'') + '</div>' +
+      (b.desc ? '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + b.desc + '</div>' : '') +
+      '</div></div>';
+  }).join('');
+}
+
+function renderBijlagen() {
+  const el = document.getElementById('bijlagen-auto-list');
+  if (!el) return;
+  el.innerHTML = `<h3 style="font-size:16px;font-weight:500;margin-bottom:1rem;color:var(--ink)">Bijlagenlijst</h3>${buildBijlagenHTML(false)}`;
+}
+
+function getEntryBijlagen(timestamp) {
+  if (!data.bijlagen_overrides) return [];
+  const ov = data.bijlagen_overrides[timestamp] || {};
+  // sub-bijlagen: array of {title, desc}
+  return ov.sub || [];
+}
+
+function renderBijlagenWerkmodus() {
+  const el = document.getElementById('bijlagen-werk-list');
+  if (!el) return;
+  const manuals = data.manual_bijlagen || [];
+
+  let html = '';
+
+  if (!manuals.length) {
+    html = '<p style="font-size:13px;color:var(--muted);font-style:italic">Nog geen bijlagen toegevoegd. Gebruik het formulier hierboven om bijlagen toe te voegen.</p>';
+  } else {
+    manuals.forEach((b, mi) => {
+      const nr = mi + 1;
+      html += `<div class="bijlage-row">
+        <div class="bijlage-nr">Bijlage ${nr}</div>
+        <div class="bijlage-content">
+          <div class="bijlage-title-text" id="mbtitle-${mi}">${b.title||'(geen titel)'}</div>
+          <div class="bijlage-desc-text" id="mbdesc-${mi}">${b.desc||''}</div>
+          <div style="display:flex;gap:6px;margin-top:6px">
+            <button class="bijlage-edit-btn" onclick="toggleBijlageForm('manual-${mi}')">Bewerk</button>
+            <button class="bijlage-edit-btn" style="color:#E24B4A" onclick="deleteManualBijlage(${mi})">Verwijder</button>
+          </div>
+          <div class="bijlage-edit-form" id="bform-manual-${mi}">
+            <label>Titel</label>
+            <input type="text" id="mbinp-title-${mi}" value="${b.title||''}" placeholder="Bijv: Plattegrond onderzoeksgebied" />
+            <label>Beschrijving</label>
+            <textarea id="mbinp-desc-${mi}" placeholder="Toelichting op deze bijlage">${b.desc||''}</textarea>
+            <div class="bijlage-form-actions">
+              <button class="bijlage-save-btn" onclick="saveManualBijlage(${mi})">Opslaan</button>
+              <button class="bijlage-cancel-btn" onclick="toggleBijlageForm('manual-${mi}')">Annuleer</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    });
+  }
+
+  html += `<div style="margin-top:1rem">
+    <button class="add-bijlage-btn" onclick="addManualBijlage()">+ Handmatige bijlage toevoegen</button>
+  </div>`;
+
+  el.innerHTML = html;
+}
+
+function toggleBijlageForm(id) {
+  const form = document.getElementById(`bform-${id}`);
+  if (!form) return;
+  form.style.display = form.style.display === 'block' ? 'none' : 'block';
+}
+
+async function saveBijlageOverride(mainNr, timestamp) {
+  const title = document.getElementById(`binp-title-${mainNr}`).value.trim();
+  const desc = document.getElementById(`binp-desc-${mainNr}`).value.trim();
+  if (!data.bijlagen_overrides) data.bijlagen_overrides = {};
+  if (!data.bijlagen_overrides[timestamp]) data.bijlagen_overrides[timestamp] = {};
+  data.bijlagen_overrides[timestamp].title = title;
+  data.bijlagen_overrides[timestamp].desc = desc;
+  await savePlaceholder('bijlagen_overrides', JSON.stringify(data.bijlagen_overrides));
+  saveData();
+  const titleEl = document.getElementById(`btitle-${mainNr}`);
+  const descEl = document.getElementById(`bdesc-${mainNr}`);
+  if (titleEl) titleEl.textContent = title || document.getElementById(`binp-title-${mainNr}`).placeholder;
+  if (descEl) descEl.textContent = desc || '';
+  toggleBijlageForm(`main-${mainNr}`);
+  renderBijlagen();
+  showToast('Bijlage bijgewerkt');
+}
+
+async function addSubBijlage(timestamp, mainNr) {
+  if (!data.bijlagen_overrides) data.bijlagen_overrides = {};
+  if (!data.bijlagen_overrides[timestamp]) data.bijlagen_overrides[timestamp] = {};
+  if (!data.bijlagen_overrides[timestamp].sub) data.bijlagen_overrides[timestamp].sub = [];
+  if (data.bijlagen_overrides[timestamp].sub.length >= 10) {
+    showToast('Maximum van 10 sub-bijlagen bereikt'); return;
+  }
+  data.bijlagen_overrides[timestamp].sub.push({ title: '', desc: '' });
+  await savePlaceholder('bijlagen_overrides', JSON.stringify(data.bijlagen_overrides));
+  saveData();
+  renderBijlagenWerkmodus();
+  renderBijlagen();
+}
+
+async function saveSubBijlage(timestamp, subIdx, subId, mainNr) {
+  const title = document.getElementById(`sinp-title-${subId}`).value.trim();
+  const desc = document.getElementById(`sinp-desc-${subId}`).value.trim();
+  if (!data.bijlagen_overrides[timestamp].sub) data.bijlagen_overrides[timestamp].sub = [];
+  data.bijlagen_overrides[timestamp].sub[subIdx] = { title, desc };
+  await savePlaceholder('bijlagen_overrides', JSON.stringify(data.bijlagen_overrides));
+  saveData();
+  const titleEl = document.getElementById(`btitle-sub-${subId}`);
+  const descEl = document.getElementById(`bdesc-sub-${subId}`);
+  if (titleEl) titleEl.textContent = title;
+  if (descEl) descEl.textContent = desc;
+  toggleBijlageForm(`sub-${subId}`);
+  renderBijlagen();
+  showToast('Sub-bijlage opgeslagen');
+}
+
+async function deleteSubBijlage(timestamp, subIdx, mainNr) {
+  if (!confirm('Sub-bijlage verwijderen?')) return;
+  data.bijlagen_overrides[timestamp].sub.splice(subIdx, 1);
+  await savePlaceholder('bijlagen_overrides', JSON.stringify(data.bijlagen_overrides));
+  saveData();
+  renderBijlagenWerkmodus();
+  renderBijlagen();
+  showToast('Sub-bijlage verwijderd');
+}
+
+async function addManualBijlage() {
+  if (!data.manual_bijlagen) data.manual_bijlagen = [];
+  data.manual_bijlagen.push({ title: '', desc: '' });
+  await savePlaceholder('manual_bijlagen', JSON.stringify(data.manual_bijlagen));
+  saveData();
+  renderBijlagenWerkmodus();
+}
+
+async function saveManualBijlage(idx) {
+  const title = document.getElementById(`mbinp-title-${idx}`).value.trim();
+  const desc = document.getElementById(`mbinp-desc-${idx}`).value.trim();
+  if (!data.manual_bijlagen) data.manual_bijlagen = [];
+  data.manual_bijlagen[idx] = { title, desc };
+  await savePlaceholder('manual_bijlagen', JSON.stringify(data.manual_bijlagen));
+  saveData();
+  document.getElementById(`mbtitle-${idx}`).textContent = title || '(geen titel)';
+  document.getElementById(`mbdesc-${idx}`).textContent = desc;
+  toggleBijlageForm(`manual-${idx}`);
+  renderBijlagen();
+  showToast('Bijlage opgeslagen');
+}
+
+async function deleteManualBijlage(idx) {
+  if (!confirm('Bijlage verwijderen?')) return;
+  data.manual_bijlagen.splice(idx, 1);
+  await savePlaceholder('manual_bijlagen', JSON.stringify(data.manual_bijlagen));
+  saveData();
+  renderBijlagenWerkmodus();
+  renderBijlagen();
+  showToast('Bijlage verwijderd');
+}
+
+async function addNewBijlage() {
+  const title = document.getElementById('new-bijlage-title').value.trim();
+  const desc = document.getElementById('new-bijlage-desc').value.trim();
+  if (!title) { showToast('Vul minimaal een titel in'); return; }
+  if (!data.manual_bijlagen) data.manual_bijlagen = [];
+  data.manual_bijlagen.push({ title, desc });
+  await savePlaceholder('manual_bijlagen', JSON.stringify(data.manual_bijlagen));
+  saveData();
+  document.getElementById('new-bijlage-title').value = '';
+  document.getElementById('new-bijlage-desc').value = '';
+  renderBijlagenWerkmodus();
+  renderBijlagenCheckboxes();
+  renderBijlagen();
+  showToast('Bijlage toegevoegd');
+}
+
+function renderBijlagenCheckboxes() {
+  const el = document.getElementById('bijlagen-checkboxes');
+  if (!el) return;
+  const manuals = data.manual_bijlagen || [];
+  if (!manuals.length) {
+    el.innerHTML = '<span style="font-size:12px;color:var(--muted);font-style:italic;padding:0.5rem 0">Voeg eerst bijlagen toe via het tabblad "Bijlagen".</span>';
+    return;
+  }
+  el.innerHTML = manuals.map((b, i) => `
+    <button type="button" class="bijlage-pill" id="bijlage-pill-${i}" onclick="toggleBijlagePill(${i})" title="${b.desc||''}">
+      <span class="pill-check" id="pill-check-${i}">○</span>
+      <span>${b.title||'(geen titel)'}</span>
+    </button>`).join('');
+}
+
+function toggleBijlagePill(i) {
+  const pill = document.getElementById('bijlage-pill-' + i);
+  const check = document.getElementById('pill-check-' + i);
+  if (!pill) return;
+  const selected = pill.classList.toggle('selected');
+  check.textContent = selected ? '✓' : '○';
+}
+
+function getSelectedBijlagen() {
+  const manuals = data.manual_bijlagen || [];
+  return manuals.map((b, i) => {
+    const pill = document.getElementById('bijlage-pill-' + i);
+    return pill && pill.classList.contains('selected') ? { idx: i, title: b.title, desc: b.desc } : null;
+  }).filter(Boolean);
+}
+
+function toggleCompPill(key) {
+  const pill = document.getElementById('comp-pill-' + key);
+  if (!pill) return;
+  pill.classList.toggle('selected');
+}
+
+function getSelectedComps() {
+  return Object.keys(COMPETENTIES).filter(k => {
+    const pill = document.getElementById('comp-pill-' + k);
+    return pill && pill.classList.contains('selected');
+  });
+}
+
+async function verbeterSituation() {
+  const el = document.getElementById('inp-situation');
+  const btn = document.getElementById('verbeter-btn');
+  const hint = document.getElementById('situation-hint');
+  if (!el) { showToast('Veld niet gevonden'); return; }
+  const val = el.value.trim();
+  if (!val) { showToast('Vul eerst het probleem in'); return; }
+  btn.textContent = '...';
+  btn.disabled = true;
+  try {
+    const res = await callAPI(
+      [{ role: 'user', content: 'Herschrijf de volgende probleemomschrijving zodat die helder, concreet en specifiek is voor een HBO-procesverslag. Schrijf in ik-vorm. Geen aanhalingstekens. Maximaal 10 zinnen. Geef alleen de herschreven tekst terug. Probleem: ' + val }],
+      'Je bent assistent voor een HBO-student Ruimtelijke Ontwikkeling. Herschrijf probleemomschrijvingen helder, concreet en in ik-vorm.',
+      600
+    );
+    const result = await res.json();
+    if (result.error) throw new Error(result.error.message);
+    const tekst = result.content.filter(b => b.type === 'text').map(b => b.text).join('').trim();
+    if (tekst) {
+      el.value = tekst;
+      if (hint) hint.style.display = 'inline';
+      showToast('Probleem verduidelijkt');
+    }
+  } catch(e) {
+    console.error('verbeterSituation:', e);
+    showToast('Fout: ' + (e.message || 'Probeer opnieuw'));
+  }
+  btn.textContent = 'AI verbeteren ↗';
+  btn.disabled = false;
+}
+
+function extractEyeopener(raw) {
+  if (!raw) return '';
+  const match = raw.match(/Eye-opener[:\s]+(.+)/s);
+  if (!match) return '';
+  return match[1].trim();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── API HELPER ──
+async function callAPI(messages, system, max_tokens=1000) {
+  const key = getApiKey();
+  if (!key) {
+    document.getElementById('settings-bar').classList.remove('hidden');
+    throw new Error('Geen API-sleutel ingesteld.');
+  }
+  return fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens, system, messages })
+  });
+}
+
+</script>
+</body>
+</html>
